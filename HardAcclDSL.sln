@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{384C377D-827F-48E9-BBA1-66B17B418AE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardAcclDslApi", "src\HardAcclDSLApi\HardAcclDslApi.csproj", "{A79E940D-8F91-435A-82DD-85639077AE57}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{DF9BB4F7-39CD-4F20-AD2C-A8E4B81302F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardAcclDslApi.UnitTests", "tests\HardAcclDslApi.UnitTests\HardAcclDslApi.UnitTests.csproj", "{0E7ADC38-EF31-4792-B028-C4B22D1EB27D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A79E940D-8F91-435A-82DD-85639077AE57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A79E940D-8F91-435A-82DD-85639077AE57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A79E940D-8F91-435A-82DD-85639077AE57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A79E940D-8F91-435A-82DD-85639077AE57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E7ADC38-EF31-4792-B028-C4B22D1EB27D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E7ADC38-EF31-4792-B028-C4B22D1EB27D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E7ADC38-EF31-4792-B028-C4B22D1EB27D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E7ADC38-EF31-4792-B028-C4B22D1EB27D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A79E940D-8F91-435A-82DD-85639077AE57} = {384C377D-827F-48E9-BBA1-66B17B418AE0}
+		{0E7ADC38-EF31-4792-B028-C4B22D1EB27D} = {DF9BB4F7-39CD-4F20-AD2C-A8E4B81302F0}
+	EndGlobalSection
+EndGlobal
