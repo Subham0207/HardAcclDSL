@@ -42,6 +42,12 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 ### 3.1) Visual Script UI (React Flow Prototype)
 - Installed React Flow library (`@xyflow/react`) in `visualscript/`.
 - Replaced Vite starter page with a basic graph canvas prototype.
+- Refactored UI into reusable modules:
+	- thin `App.tsx` shell
+	- `GraphCanvas` for graph state/behavior
+	- per-node components under `features/nodes/`
+	- centralized node registry (`nodeTypes`)
+	- separate graph config (`initialGraph`, `defaultEdgeOptions`)
 - Added starter nodes for:
 	- LocalDeclaration
 	- Assignment
@@ -50,6 +56,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Binary
 	- Identifier
 	- NumberLiteral
+- Each node now owns its own pin/handle definitions directly using React Flow `Handle` (no wrapper abstraction).
+- Initial graph now uses explicit `sourceHandle` and `targetHandle` ids for clearer field-level wiring.
 - Added React Flow interactions:
 	- drag nodes
 	- connect edges via visible input/output pins (handles)
