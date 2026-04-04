@@ -8,14 +8,25 @@ public enum AstNodeKind
     LocalDeclarationStatement,
     AssignmentStatement,
     ReturnStatement,
-    ExpressionStatement,
     IdentifierExpression,
     NumberLiteralExpression,
     StringLiteralExpression,
     BinaryExpression,
-    CallExpression
+    FunctionCall,
+    FunctionDeclaration
 }
 
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(ProgramNode), "program")]
+[JsonDerivedType(typeof(LocalDeclarationStatementNode), "localDecl")]
+[JsonDerivedType(typeof(AssignmentStatementNode), "assign")]
+[JsonDerivedType(typeof(ReturnStatementNode), "return")]
+[JsonDerivedType(typeof(IdentifierExpressionNode), "identifier")]
+[JsonDerivedType(typeof(NumberLiteralExpressionNode), "number")]
+[JsonDerivedType(typeof(StringLiteralExpressionNode), "string")]
+[JsonDerivedType(typeof(BinaryExpressionNode), "binary")]
+[JsonDerivedType(typeof(FunctionCallNode), "functionCall")]
+[JsonDerivedType(typeof(FunctionDeclarationNode), "functionDecl")]
 public abstract class AstNode
 {
     // Stable node id that UI clients can use for selection, updates, and patch operations.
@@ -26,83 +37,66 @@ public abstract class AstNode
 public sealed class ProgramNode : AstNode
 {
     public override AstNodeKind Kind => AstNodeKind.Program;
-    public List<StatementNode> Statements { get; init; } = new();
+    public List<AstNode> Statements { get; init; } = new();
 }
 
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-[JsonDerivedType(typeof(LocalDeclarationStatementNode), "localDecl")]
-[JsonDerivedType(typeof(AssignmentStatementNode), "assign")]
-[JsonDerivedType(typeof(ReturnStatementNode), "return")]
-[JsonDerivedType(typeof(ExpressionStatementNode), "exprStmt")]
-public abstract class StatementNode : AstNode
-{
-}
-
-public sealed class LocalDeclarationStatementNode : StatementNode
+public sealed class LocalDeclarationStatementNode : AstNode
 {
     public override AstNodeKind Kind => AstNodeKind.LocalDeclarationStatement;
     public string Name { get; init; } = string.Empty;
-    public ExpressionNode Value { get; init; } = new IdentifierExpressionNode();
+    public AstNode Value { get; init; } = new IdentifierExpressionNode();
 }
 
-public sealed class AssignmentStatementNode : StatementNode
+public sealed class AssignmentStatementNode : AstNode
 {
     public override AstNodeKind Kind => AstNodeKind.AssignmentStatement;
     public string Name { get; init; } = string.Empty;
-    public ExpressionNode Value { get; init; } = new IdentifierExpressionNode();
+    public AstNode Value { get; init; } = new IdentifierExpressionNode();
 }
 
-public sealed class ReturnStatementNode : StatementNode
+public sealed class ReturnStatementNode : AstNode
 {
     public override AstNodeKind Kind => AstNodeKind.ReturnStatement;
-    public ExpressionNode Value { get; init; } = new IdentifierExpressionNode();
+    public AstNode Value { get; init; } = new IdentifierExpressionNode();
 }
 
-public sealed class ExpressionStatementNode : StatementNode
-{
-    public override AstNodeKind Kind => AstNodeKind.ExpressionStatement;
-    public ExpressionNode Expression { get; init; } = new IdentifierExpressionNode();
-}
-
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-[JsonDerivedType(typeof(IdentifierExpressionNode), "identifier")]
-[JsonDerivedType(typeof(NumberLiteralExpressionNode), "number")]
-[JsonDerivedType(typeof(StringLiteralExpressionNode), "string")]
-[JsonDerivedType(typeof(BinaryExpressionNode), "binary")]
-[JsonDerivedType(typeof(CallExpressionNode), "call")]
-public abstract class ExpressionNode : AstNode
-{
-}
-
-public sealed class IdentifierExpressionNode : ExpressionNode
+public sealed class IdentifierExpressionNode : AstNode
 {
     public override AstNodeKind Kind => AstNodeKind.IdentifierExpression;
     public string Name { get; init; } = string.Empty;
 }
 
-public sealed class NumberLiteralExpressionNode : ExpressionNode
+public sealed class NumberLiteralExpressionNode : AstNode
 {
     public override AstNodeKind Kind => AstNodeKind.NumberLiteralExpression;
     public string RawText { get; init; } = string.Empty;
 }
 
-public sealed class StringLiteralExpressionNode : ExpressionNode
+public sealed class StringLiteralExpressionNode : AstNode
 {
     public override AstNodeKind Kind => AstNodeKind.StringLiteralExpression;
     public string RawText { get; init; } = string.Empty;
 }
 
-public sealed class BinaryExpressionNode : ExpressionNode
+public sealed class BinaryExpressionNode : AstNode
 {
     public override AstNodeKind Kind => AstNodeKind.BinaryExpression;
     public string Operator { get; init; } = string.Empty;
-    public ExpressionNode Left { get; init; } = new IdentifierExpressionNode();
-    public ExpressionNode Right { get; init; } = new IdentifierExpressionNode();
+    public AstNode Left { get; init; } = new IdentifierExpressionNode();
+    public AstNode Right { get; init; } = new IdentifierExpressionNode();
 }
 
-public sealed class CallExpressionNode : ExpressionNode
+public sealed class FunctionCallNode : AstNode
 {
-    public override AstNodeKind Kind => AstNodeKind.CallExpression;
+    public override AstNodeKind Kind => AstNodeKind.FunctionCall;
     public string FunctionName { get; init; } = string.Empty;
-    public List<ExpressionNode> Arguments { get; init; } = new();
+    public List<AstNode> Arguments { get; init; } = new();
+}
+
+public sealed class FunctionDeclarationNode : AstNode
+{
+    public override AstNodeKind Kind => AstNodeKind.FunctionDeclaration;
+    public string Name { get; init; } = string.Empty;
+    public List<string> Parameters { get; init; } = new();
+    public List<AstNode> Body { get; init; } = new();
 }

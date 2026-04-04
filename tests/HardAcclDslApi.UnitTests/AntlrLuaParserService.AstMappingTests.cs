@@ -14,7 +14,7 @@ public class AntlrLuaParserServiceAstMappingTests
 
         var expected = new ProgramNode
         {
-            Statements = new List<StatementNode>
+            Statements = new List<AstNode>
             {
                 new LocalDeclarationStatementNode
                 {
@@ -39,7 +39,7 @@ public class AntlrLuaParserServiceAstMappingTests
 
         var expected = new ProgramNode
         {
-            Statements = new List<StatementNode>
+            Statements = new List<AstNode>
             {
                 new AssignmentStatementNode
                 {
@@ -59,7 +59,7 @@ public class AntlrLuaParserServiceAstMappingTests
 
         var expected = new ProgramNode
         {
-            Statements = new List<StatementNode>
+            Statements = new List<AstNode>
             {
                 new ReturnStatementNode
                 {
@@ -72,24 +72,21 @@ public class AntlrLuaParserServiceAstMappingTests
     }
 
     [Fact]
-    public void Parse_CallStatement_MapsToExpressionStatementAst()
+    public void Parse_CallStatement_MapsToFunctionCallNodeAst()
     {
         var result = _sut.Parse("print(1, a)");
 
         var expected = new ProgramNode
         {
-            Statements = new List<StatementNode>
+            Statements = new List<AstNode>
             {
-                new ExpressionStatementNode
+                new FunctionCallNode
                 {
-                    Expression = new CallExpressionNode
+                    FunctionName = "print",
+                    Arguments = new List<AstNode>
                     {
-                        FunctionName = "print",
-                        Arguments = new List<ExpressionNode>
-                        {
-                            new NumberLiteralExpressionNode { RawText = "1" },
-                            new IdentifierExpressionNode { Name = "a" }
-                        }
+                        new NumberLiteralExpressionNode { RawText = "1" },
+                        new IdentifierExpressionNode { Name = "a" }
                     }
                 }
             }
@@ -105,7 +102,7 @@ public class AntlrLuaParserServiceAstMappingTests
 
         var expected = new ProgramNode
         {
-            Statements = new List<StatementNode>
+            Statements = new List<AstNode>
             {
                 new LocalDeclarationStatementNode
                 {
@@ -135,7 +132,7 @@ public class AntlrLuaParserServiceAstMappingTests
 
         var expected = new ProgramNode
         {
-            Statements = new List<StatementNode>
+            Statements = new List<AstNode>
             {
                 new LocalDeclarationStatementNode
                 {
@@ -180,11 +177,6 @@ public class AntlrLuaParserServiceAstMappingTests
                 Kind = ret.Kind,
                 Value = ToComparableNode(ret.Value)
             },
-            ExpressionStatementNode exprStmt => new
-            {
-                Kind = exprStmt.Kind,
-                Expression = ToComparableNode(exprStmt.Expression)
-            },
             IdentifierExpressionNode identifier => new
             {
                 Kind = identifier.Kind,
@@ -207,7 +199,7 @@ public class AntlrLuaParserServiceAstMappingTests
                 Left = ToComparableNode(binary.Left),
                 Right = ToComparableNode(binary.Right)
             },
-            CallExpressionNode call => new
+            FunctionCallNode call => new
             {
                 Kind = call.Kind,
                 call.FunctionName,

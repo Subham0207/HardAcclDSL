@@ -51,7 +51,7 @@ public sealed class AntlrLuaParserService
 
     private static ProgramNode BuildAst(LuaSubsetParser.ChunkContext chunkContext)
     {
-        var statements = new List<StatementNode>();
+        var statements = new List<AstNode>();
 
         foreach (var statementContext in chunkContext.statement())
         {
@@ -64,7 +64,7 @@ public sealed class AntlrLuaParserService
         };
     }
 
-    private static StatementNode BuildStatement(LuaSubsetParser.StatementContext statementContext)
+    private static AstNode BuildStatement(LuaSubsetParser.StatementContext statementContext)
     {
         if (statementContext.localAssignStmt() is { } localAssign)
         {
@@ -94,29 +94,26 @@ public sealed class AntlrLuaParserService
 
         if (statementContext.callStmt() is { } callStmt)
         {
-            return new ExpressionStatementNode
-            {
-                Expression = BuildCallExpression(callStmt.functionCall())
-            };
+            return BuildFunctionCall(callStmt.functionCall());
         }
 
         throw new InvalidOperationException("Unsupported statement in current Lua subset.");
     }
 
-    private static ExpressionNode BuildExpression(LuaSubsetParser.ExpressionContext expressionContext)
+    private static AstNode BuildExpression(LuaSubsetParser.ExpressionContext expressionContext)
     {
         return BuildAdditiveExpression(expressionContext.additiveExpr());
     }
 
-    private static ExpressionNode BuildAdditiveExpression(LuaSubsetParser.AdditiveExprContext additiveContext)
+    private static AstNode BuildAdditiveExpression(LuaSubsetParser.AdditiveExprContext additiveContext)
     {
         var terms = additiveContext.multiplicativeExpr();
-        ExpressionNode current = BuildMultiplicativeExpression(terms[0]);
+        AstNode current = BuildMultiplicativeExpression(terms[0]);
 
         for (int i = 1; i < terms.Length; i++)
         {
             string op = additiveContext.GetChild(2 * i - 1).GetText();
-            ExpressionNode right = BuildMultiplicativeExpression(terms[i]);
+            AstNode right = BuildMultiplicativeExpression(terms[i]);
 
             current = new BinaryExpressionNode
             {
@@ -129,15 +126,15 @@ public sealed class AntlrLuaParserService
         return current;
     }
 
-    private static ExpressionNode BuildMultiplicativeExpression(LuaSubsetParser.MultiplicativeExprContext multiplicativeContext)
+    private static AstNode BuildMultiplicativeExpression(LuaSubsetParser.MultiplicativeExprContext multiplicativeContext)
     {
         var factors = multiplicativeContext.primaryExpr();
-        ExpressionNode current = BuildPrimaryExpression(factors[0]);
+        AstNode current = BuildPrimaryExpression(factors[0]);
 
         for (int i = 1; i < factors.Length; i++)
         {
             string op = multiplicativeContext.GetChild(2 * i - 1).GetText();
-            ExpressionNode right = BuildPrimaryExpression(factors[i]);
+            AstNode right = BuildPrimaryExpression(factors[i]);
 
             current = new BinaryExpressionNode
             {
@@ -150,7 +147,7 @@ public sealed class AntlrLuaParserService
         return current;
     }
 
-    private static ExpressionNode BuildPrimaryExpression(LuaSubsetParser.PrimaryExprContext primaryContext)
+    private static AstNode BuildPrimaryExpression(LuaSubsetParser.PrimaryExprContext primaryContext)
     {
         if (primaryContext.NUMBER() is { } numberToken)
         {
@@ -178,7 +175,7 @@ public sealed class AntlrLuaParserService
 
         if (primaryContext.functionCall() is { } call)
         {
-            return BuildCallExpression(call);
+            return BuildFunctionCall(call);
         }
 
         if (primaryContext.expression() is { } nestedExpression)
@@ -189,9 +186,9 @@ public sealed class AntlrLuaParserService
         throw new InvalidOperationException("Unsupported primary expression in current Lua subset.");
     }
 
-    private static CallExpressionNode BuildCallExpression(LuaSubsetParser.FunctionCallContext functionCallContext)
+    private static FunctionCallNode BuildFunctionCall(LuaSubsetParser.FunctionCallContext functionCallContext)
     {
-        var args = new List<ExpressionNode>();
+        var args = new List<AstNode>();
         var argumentList = functionCallContext.argumentList();
         if (argumentList is not null)
         {
@@ -201,7 +198,7 @@ public sealed class AntlrLuaParserService
             }
         }
 
-        return new CallExpressionNode
+        return new FunctionCallNode
         {
             FunctionName = functionCallContext.NAME().GetText(),
             Arguments = args
