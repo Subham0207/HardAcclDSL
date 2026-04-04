@@ -8,6 +8,7 @@ namespace HardAcclDslApi.Models
         String,
         Operator,
         Punctuator,
+        EOF,
         Invalid
     }
 }

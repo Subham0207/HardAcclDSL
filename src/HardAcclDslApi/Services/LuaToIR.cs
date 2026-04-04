@@ -17,7 +17,7 @@ namespace HardAcclDslApi.Services.LuaToIR
         /// </summary>
         /// <param name="LuaCode">The Lua source code to convert.</param>
         /// <returns>The intermediate representation.</returns>
-        public string Convert(string LuaCode = "10 + 2")
+        public string Convert(string LuaCode)
         {
             if (string.IsNullOrEmpty(LuaCode))
             {
