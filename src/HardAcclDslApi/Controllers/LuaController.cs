@@ -1,5 +1,6 @@
 using HardAcclDslApi.Services;
 using HardAcclDslApi.Models.Parsing;
+using HardAcclDslApi.Models.Ast;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HardAcclDslApi.Controllers;
@@ -32,7 +33,8 @@ public class LuaController : ControllerBase
             {
                 Ir = result.Ir,
                 ParseTree = result.ParseTree,
-                Tokens = result.Tokens
+                Tokens = result.Tokens,
+                Ast = result.Ast
             });
         }
         catch (InvalidOperationException ex)
@@ -64,6 +66,30 @@ public class LuaController : ControllerBase
             ParseTree = parseResult.ParseTreeRoot
         });
     }
+
+    [HttpPost("ast")]
+    public ActionResult<AstOnlyResponse> Ast([FromBody] LuaConvertRequest request)
+    {
+        if (request is null || string.IsNullOrWhiteSpace(request.LuaCode))
+        {
+            return BadRequest("luaCode is required.");
+        }
+
+        var parseResult = _parserService.Parse(request.LuaCode);
+        if (!parseResult.IsValid)
+        {
+            var firstError = parseResult.Errors[0];
+            return BadRequest(new
+            {
+                error = $"Lua syntax error at line {firstError.Line}, column {firstError.Column}: {firstError.Message}"
+            });
+        }
+
+        return Ok(new AstOnlyResponse
+        {
+            Ast = parseResult.AstRoot ?? new ProgramNode()
+        });
+    }
 }
 
 public sealed class LuaConvertRequest
@@ -77,9 +103,15 @@ public sealed class LuaConvertResponse
     public string ParseTree { get; init; } = string.Empty;
     public IReadOnlyList<HardAcclDslApi.Models.Parsing.TokenInfo> Tokens { get; init; } =
         Array.Empty<HardAcclDslApi.Models.Parsing.TokenInfo>();
+    public ProgramNode Ast { get; init; } = new();
 }
 
 public sealed class ParseTreeOnlyResponse
 {
     public ParseTreeNode ParseTree { get; init; } = new();
+}
+
+public sealed class AstOnlyResponse
+{
+    public ProgramNode Ast { get; init; } = new();
 }

@@ -1,5 +1,7 @@
 namespace HardAcclDslApi.Models.Parsing;
 
+using HardAcclDslApi.Models.Ast;
+
 public sealed class ParseResult
 {
     public bool IsValid => Errors.Count == 0;
@@ -7,4 +9,5 @@ public sealed class ParseResult
     public List<TokenInfo> Tokens { get; init; } = new();
     public string ParseTree { get; init; } = string.Empty;
     public ParseTreeNode ParseTreeRoot { get; init; } = new();
+    public ProgramNode? AstRoot { get; init; }
 }

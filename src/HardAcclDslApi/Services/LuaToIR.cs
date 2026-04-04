@@ -1,5 +1,7 @@
 namespace HardAcclDslApi.Services;
 
+using HardAcclDslApi.Models.Ast;
+
 /// <summary>
 /// Converts Lua code to an Intermediate Representation (IR).
 /// This currently validates and parses Lua subset syntax via ANTLR.
@@ -51,7 +53,8 @@ public class LuaToIR
         {
             Ir = $"IR_PLACEHOLDER | tokens={parseResult.Tokens.Count}",
             ParseTree = parseResult.ParseTree,
-            Tokens = parseResult.Tokens
+            Tokens = parseResult.Tokens,
+            Ast = parseResult.AstRoot ?? new ProgramNode()
         };
     }
 }
@@ -62,4 +65,5 @@ public sealed class ConvertDetailsResult
     public string ParseTree { get; init; } = string.Empty;
     public IReadOnlyList<HardAcclDslApi.Models.Parsing.TokenInfo> Tokens { get; init; } =
         Array.Empty<HardAcclDslApi.Models.Parsing.TokenInfo>();
+    public ProgramNode Ast { get; init; } = new();
 }
