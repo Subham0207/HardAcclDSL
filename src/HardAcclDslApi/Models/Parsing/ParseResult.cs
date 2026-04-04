@@ -6,4 +6,5 @@ public sealed class ParseResult
     public List<SyntaxError> Errors { get; init; } = new();
     public List<TokenInfo> Tokens { get; init; } = new();
     public string ParseTree { get; init; } = string.Empty;
+    public ParseTreeNode ParseTreeRoot { get; init; } = new();
 }

@@ -42,7 +42,56 @@ public sealed class AntlrLuaParserService
         {
             Errors = errors,
             Tokens = tokenInfos,
-            ParseTree = parseTree.ToStringTree(parser)
+            ParseTree = parseTree.ToStringTree(parser),
+            ParseTreeRoot = BuildParseTreeNode(parseTree, parser)
+        };
+    }
+
+    private static ParseTreeNode BuildParseTreeNode(IParseTree node, Parser parser)
+    {
+        if (node is ITerminalNode terminalNode)
+        {
+            var symbol = terminalNode.Symbol;
+            var tokenName = parser.Vocabulary.GetSymbolicName(symbol.Type) ?? symbol.Type.ToString();
+
+            return new ParseTreeNode
+            {
+                NodeType = "Terminal",
+                Name = tokenName,
+                Text = symbol.Text ?? string.Empty,
+                Line = symbol.Line,
+                Column = symbol.Column + 1
+            };
+        }
+
+        if (node is ParserRuleContext ruleContext)
+        {
+            string ruleName = ruleContext.RuleIndex >= 0 && ruleContext.RuleIndex < parser.RuleNames.Length
+                ? parser.RuleNames[ruleContext.RuleIndex]
+                : "UnknownRule";
+
+            var children = new List<ParseTreeNode>();
+            for (int i = 0; i < ruleContext.ChildCount; i++)
+            {
+                children.Add(BuildParseTreeNode(ruleContext.GetChild(i), parser));
+            }
+
+            return new ParseTreeNode
+            {
+                NodeType = "Rule",
+                Name = ruleName,
+                Text = ruleContext.GetText(),
+                Line = ruleContext.Start?.Line,
+                Column = ruleContext.Start is null ? null : ruleContext.Start.Column + 1,
+                Children = children
+            };
+        }
+
+        return new ParseTreeNode
+        {
+            NodeType = "Unknown",
+            Name = node.GetType().Name,
+            Text = node.GetText()
         };
     }
 

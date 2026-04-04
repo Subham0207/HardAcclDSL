@@ -22,6 +22,16 @@ public class LuaToIR
     /// <returns>A placeholder IR payload with parse information.</returns>
     public string Convert(string luaCode)
     {
+        return ConvertWithDetails(luaCode).Ir;
+    }
+
+    /// <summary>
+    /// Converts Lua source code and returns parse details useful for debugging.
+    /// </summary>
+    /// <param name="luaCode">The Lua source code to convert.</param>
+    /// <returns>IR placeholder plus parse tree and tokens.</returns>
+    public ConvertDetailsResult ConvertWithDetails(string luaCode)
+    {
         if (string.IsNullOrWhiteSpace(luaCode))
         {
             throw new ArgumentException("Lua code cannot be null or empty.", nameof(luaCode));
@@ -37,6 +47,19 @@ public class LuaToIR
                 $"Lua syntax error at line {firstError.Line}, column {firstError.Column}: {firstError.Message}");
         }
 
-        return $"IR_PLACEHOLDER | tokens={parseResult.Tokens.Count}";
+        return new ConvertDetailsResult
+        {
+            Ir = $"IR_PLACEHOLDER | tokens={parseResult.Tokens.Count}",
+            ParseTree = parseResult.ParseTree,
+            Tokens = parseResult.Tokens
+        };
     }
+}
+
+public sealed class ConvertDetailsResult
+{
+    public string Ir { get; init; } = string.Empty;
+    public string ParseTree { get; init; } = string.Empty;
+    public IReadOnlyList<HardAcclDslApi.Models.Parsing.TokenInfo> Tokens { get; init; } =
+        Array.Empty<HardAcclDslApi.Models.Parsing.TokenInfo>();
 }
