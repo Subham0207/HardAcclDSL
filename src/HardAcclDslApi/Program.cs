@@ -1,4 +1,5 @@
 using HardAcclDslApi.Services;
+using HardAcclDslApi.Models.Ast;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(new AstNodeJsonConverter());
     });
 builder.Services.AddSingleton<AntlrLuaParserService>();
 builder.Services.AddSingleton<LuaToIR>();

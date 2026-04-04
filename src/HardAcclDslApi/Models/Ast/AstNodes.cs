@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace HardAcclDslApi.Models.Ast;
 
 public enum AstNodeKind
@@ -16,17 +14,6 @@ public enum AstNodeKind
     FunctionDeclaration
 }
 
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-[JsonDerivedType(typeof(ProgramNode), "program")]
-[JsonDerivedType(typeof(LocalDeclarationStatementNode), "localDecl")]
-[JsonDerivedType(typeof(AssignmentStatementNode), "assign")]
-[JsonDerivedType(typeof(ReturnStatementNode), "return")]
-[JsonDerivedType(typeof(IdentifierExpressionNode), "identifier")]
-[JsonDerivedType(typeof(NumberLiteralExpressionNode), "number")]
-[JsonDerivedType(typeof(StringLiteralExpressionNode), "string")]
-[JsonDerivedType(typeof(BinaryExpressionNode), "binary")]
-[JsonDerivedType(typeof(FunctionCallNode), "functionCall")]
-[JsonDerivedType(typeof(FunctionDeclarationNode), "functionDecl")]
 public abstract class AstNode
 {
     // Stable node id that UI clients can use for selection, updates, and patch operations.
