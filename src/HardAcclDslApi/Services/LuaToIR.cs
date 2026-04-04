@@ -1,32 +1,38 @@
-using System;
-using System.Collections.Generic;
+namespace HardAcclDslApi.Services;
 
-namespace HardAcclDslApi.Services.LuaToIR
+/// <summary>
+/// Converts Lua code to an Intermediate Representation (IR).
+/// This currently validates and parses Lua subset syntax via ANTLR.
+/// </summary>
+public class LuaToIR
 {
-    /// <summary>
-    /// Converts Lua code to an Intermediate Representation (IR).
-    /// </summary>
-    public class LuaToIR
+    private readonly AntlrLuaParserService _parserService;
+
+    public LuaToIR(AntlrLuaParserService parserService)
     {
-        public LuaToIR()
+        _parserService = parserService;
+    }
+
+    /// <summary>
+    /// Converts Lua source code to IR format.
+    /// </summary>
+    /// <param name="luaCode">The Lua source code to convert.</param>
+    /// <returns>A placeholder IR payload with parse information.</returns>
+    public string Convert(string luaCode)
+    {
+        if (string.IsNullOrWhiteSpace(luaCode))
         {
+            throw new ArgumentException("Lua code cannot be null or empty.", nameof(luaCode));
         }
 
-        /// <summary>
-        /// Converts Lua source code to IR format.
-        /// </summary>
-        /// <param name="LuaCode">The Lua source code to convert.</param>
-        /// <returns>The intermediate representation.</returns>
-        public string Convert(string LuaCode)
+        var parseResult = _parserService.Parse(luaCode);
+        if (!parseResult.IsValid)
         {
-            if (string.IsNullOrEmpty(LuaCode))
-            {
-                throw new ArgumentException("Lua code cannot be null or empty.", nameof(LuaCode));
-            }
-
-            
-
-            return string.Empty;
+            var firstError = parseResult.Errors[0];
+            throw new InvalidOperationException(
+                $"Lua syntax error at line {firstError.Line}, column {firstError.Column}: {firstError.Message}");
         }
+
+        return $"IR_PLACEHOLDER | tokens={parseResult.Tokens.Count}";
     }
 }
