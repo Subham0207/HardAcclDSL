@@ -52,10 +52,15 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- NumberLiteral
 - Added React Flow interactions:
 	- drag nodes
-	- connect edges
+	- connect edges via visible input/output pins (handles)
+	- select nodes and edges
+	- delete selected node/edge with `Delete` or `Backspace`
 	- minimap
 	- controls
 	- background grid
+- Added visual selection feedback:
+	- selected node gets stronger border/glow
+	- selected edge changes to a high-contrast highlight color
 - Current graph is a prototype view model for AST concepts and is not yet wired to backend AST APIs.
 
 AST JSON contract (latest):
