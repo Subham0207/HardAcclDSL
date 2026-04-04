@@ -1,81 +1,85 @@
-# Lua to IR: Initial Design Notes
+# HardAcclDSL: Current Direction and Progress
 
-## Goal
-Build a staged pipeline that converts a supported subset of Lua into an internal representation (IR) for analysis and later code generation.
+## Product Goal
+Use Lua as a text syntax for authoring logic, and use a custom AST as the canonical model for a future visual scripting UI.
 
-## Pipeline
-1. Lexical analysis (Lexer): source text -> tokens
-2. Parsing (Parser): tokens -> AST
-3. Lowering: AST -> IR
+Core workflow target:
+1. Lua text -> Parse -> AST
+2. Visual scripting UI edits the same AST
+3. AST -> Lua code generation
 
-Tokens are parser input, not IR. Keep IR separate so it is easier to validate, optimize, and evolve.
+IR is no longer the immediate focus. It can be revisited later if optimization or backend compilation needs arise.
 
-## Token Design
-Each token should carry:
-- Kind: broad category used by parser decisions
-- Lexeme text: exact source text for identifier/literal/operator spelling
-- Start/end offset: absolute character range in source (use end as exclusive)
-- Line/column: human-readable position for diagnostics
+## What We Have Implemented
 
-### Recommended token kinds
-- Keyword
-- Identifier
-- Number
-- String
-- Operator
-- Punctuator
-- EOF
-- Invalid
+### 1) ANTLR-based Parsing (replaces hand-written lexer complexity)
+- Added ANTLR runtime/build integration in the API project.
+- Added grammar file for a Lua subset.
+- Parser now produces:
+	- syntax diagnostics
+	- token list with line/column
+	- parse tree string (debug)
+	- structured parse tree object (JSON-friendly tree)
 
-## Lua-Specific Clarification
-Lua is not indentation-sensitive. Do not model indentation as a syntactic token category.
+### 2) Lua Parsing Services
+- Added parser service that runs generated ANTLR lexer/parser and collects diagnostics.
+- Added conversion service that validates syntax and returns placeholder conversion output.
 
-## Vocabulary Strategy (Subset First)
-Use sub-kinds so unsupported syntax can be rejected cleanly with precise errors:
-- KeywordKind: local, function, end, if, then, else, while, do, return
-- OperatorKind: =, +, -, *, /, ==, ~=, <, <=, >, >=, and, or, not, .., #
-- PunctuatorKind: (, ), ,, ., :, ;, {, }, [, ]
+### 3) API Endpoints
+- POST /api/lua/convert
+	- Returns IR placeholder string, parse tree (debug string), and tokens.
+- POST /api/lua/parse-tree
+	- Returns parse tree as a structured tree object (node + children), not only a string.
 
-## Minimal AST for v1
-Statements:
-- LocalDecl
-- Assign
-- Return
-- ExprStmt
+### 4) Tests
+- Added integration tests for LuaToIR.Convert:
+	- valid Lua subset path
+	- invalid syntax path
 
-Expressions:
-- IdentifierExpr
-- NumberLiteralExpr
-- StringLiteralExpr
-- BinaryExpr
-- CallExpr
+## Current Grammar Scope (Lua Subset)
+Supported now:
+- local assignment: local a = expression
+- assignment: a = expression
+- return expression
+- function calls: f(x, y)
+- expressions with +, -, *, /
+- number and string literals
+- line comments with --
 
-## Minimal IR for v1
-- LoadConst
-- LoadLocal
-- StoreLocal
-- Binary
-- Call
-- Return
+Out of scope for now:
+- tables
+- functions/closures bodies
+- control flow blocks
+- full Lua operator set and precedence
+- varargs, metatables, goto, etc.
 
-Add control-flow IR later (Jump/Branch) when introducing if/while.
+## Parse Tree vs AST
+Important distinction:
+- Parse tree (ANTLR output) is concrete syntax structure.
+- AST (our domain model) is simplified semantic structure used by UI and code generation.
 
-## Example
-Lua source:
+Decision:
+- Parse tree is an internal ingestion artifact.
+- AST will be the source of truth for visual scripting and Lua emission.
 
-```lua
-local a = 2 + 3
-```
+## Next Steps (AST-First Plan)
+1. Define AST model types with stable node IDs.
+2. Build ParseTree -> AST mapper (visitor-based).
+3. Add AST validation diagnostics.
+4. Add AST -> Lua code generator (templated printer).
+5. Add round-trip tests:
+	 - Lua -> AST -> Lua (semantic equivalence)
+	 - AST -> Lua -> AST (shape stability for supported subset)
 
-Conceptual IR:
-1. t1 = const 2
-2. t2 = const 3
-3. t3 = add t1, t2
-4. store_local a, t3
+## Architectural Notes
+- Keep parser internals (ANTLR rule/token names) isolated from frontend contracts.
+- Expose AST DTOs to the visual scripting layer, not parse tree DTOs.
+- Preserve source spans on AST nodes where feasible for diagnostics and editor mapping.
 
-## Scope Policy
-Start strict and documented:
-- Supported now: local declarations, numeric/string literals, arithmetic, simple calls, return
-- Deferred: tables, closures/upvalues, varargs, metamethods, goto, full Lua surface area
+## Why This Direction
+This direction directly supports product requirements:
+- text-based authoring in Lua
+- visual authoring on a shared AST
+- predictable code generation back to Lua
 
-This keeps the implementation stable while the DSL vocabulary grows incrementally.
+It keeps implementation complexity manageable while preserving a path to add IR later if needed.
