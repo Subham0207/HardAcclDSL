@@ -12,12 +12,24 @@ public class AntlrLuaParserServiceAstMappingTests
     {
         var result = _sut.Parse("local a = 2 + 3");
 
-        var program = Assert.IsType<ProgramNode>(result.AstRoot);
-        var statement = Assert.IsType<LocalDeclarationStatementNode>(Assert.Single(program.Statements));
+        var expected = new ProgramNode
+        {
+            Statements = new List<StatementNode>
+            {
+                new LocalDeclarationStatementNode
+                {
+                    Name = "a",
+                    Value = new BinaryExpressionNode
+                    {
+                        Operator = "+",
+                        Left = new NumberLiteralExpressionNode { RawText = "2" },
+                        Right = new NumberLiteralExpressionNode { RawText = "3" }
+                    }
+                }
+            }
+        };
 
-        Assert.Equal("a", statement.Name);
-        var binary = Assert.IsType<BinaryExpressionNode>(statement.Value);
-        Assert.Equal("+", binary.Operator);
+        AssertAstEquivalent(expected, result.AstRoot);
     }
 
     [Fact]
@@ -25,12 +37,19 @@ public class AntlrLuaParserServiceAstMappingTests
     {
         var result = _sut.Parse("a = b");
 
-        var program = Assert.IsType<ProgramNode>(result.AstRoot);
-        var statement = Assert.IsType<AssignmentStatementNode>(Assert.Single(program.Statements));
+        var expected = new ProgramNode
+        {
+            Statements = new List<StatementNode>
+            {
+                new AssignmentStatementNode
+                {
+                    Name = "a",
+                    Value = new IdentifierExpressionNode { Name = "b" }
+                }
+            }
+        };
 
-        Assert.Equal("a", statement.Name);
-        var identifier = Assert.IsType<IdentifierExpressionNode>(statement.Value);
-        Assert.Equal("b", identifier.Name);
+        AssertAstEquivalent(expected, result.AstRoot);
     }
 
     [Fact]
@@ -38,11 +57,18 @@ public class AntlrLuaParserServiceAstMappingTests
     {
         var result = _sut.Parse("return value");
 
-        var program = Assert.IsType<ProgramNode>(result.AstRoot);
-        var statement = Assert.IsType<ReturnStatementNode>(Assert.Single(program.Statements));
+        var expected = new ProgramNode
+        {
+            Statements = new List<StatementNode>
+            {
+                new ReturnStatementNode
+                {
+                    Value = new IdentifierExpressionNode { Name = "value" }
+                }
+            }
+        };
 
-        var identifier = Assert.IsType<IdentifierExpressionNode>(statement.Value);
-        Assert.Equal("value", identifier.Name);
+        AssertAstEquivalent(expected, result.AstRoot);
     }
 
     [Fact]
@@ -50,14 +76,26 @@ public class AntlrLuaParserServiceAstMappingTests
     {
         var result = _sut.Parse("print(1, a)");
 
-        var program = Assert.IsType<ProgramNode>(result.AstRoot);
-        var statement = Assert.IsType<ExpressionStatementNode>(Assert.Single(program.Statements));
-        var call = Assert.IsType<CallExpressionNode>(statement.Expression);
+        var expected = new ProgramNode
+        {
+            Statements = new List<StatementNode>
+            {
+                new ExpressionStatementNode
+                {
+                    Expression = new CallExpressionNode
+                    {
+                        FunctionName = "print",
+                        Arguments = new List<ExpressionNode>
+                        {
+                            new NumberLiteralExpressionNode { RawText = "1" },
+                            new IdentifierExpressionNode { Name = "a" }
+                        }
+                    }
+                }
+            }
+        };
 
-        Assert.Equal("print", call.FunctionName);
-        Assert.Equal(2, call.Arguments.Count);
-        Assert.IsType<NumberLiteralExpressionNode>(call.Arguments[0]);
-        Assert.IsType<IdentifierExpressionNode>(call.Arguments[1]);
+        AssertAstEquivalent(expected, result.AstRoot);
     }
 
     [Fact]
@@ -65,13 +103,29 @@ public class AntlrLuaParserServiceAstMappingTests
     {
         var result = _sut.Parse("local x = (2 + 3) * 4");
 
-        var program = Assert.IsType<ProgramNode>(result.AstRoot);
-        var statement = Assert.IsType<LocalDeclarationStatementNode>(Assert.Single(program.Statements));
-        var topBinary = Assert.IsType<BinaryExpressionNode>(statement.Value);
+        var expected = new ProgramNode
+        {
+            Statements = new List<StatementNode>
+            {
+                new LocalDeclarationStatementNode
+                {
+                    Name = "x",
+                    Value = new BinaryExpressionNode
+                    {
+                        Operator = "*",
+                        Left = new BinaryExpressionNode
+                        {
+                            Operator = "+",
+                            Left = new NumberLiteralExpressionNode { RawText = "2" },
+                            Right = new NumberLiteralExpressionNode { RawText = "3" }
+                        },
+                        Right = new NumberLiteralExpressionNode { RawText = "4" }
+                    }
+                }
+            }
+        };
 
-        Assert.Equal("*", topBinary.Operator);
-        var leftBinary = Assert.IsType<BinaryExpressionNode>(topBinary.Left);
-        Assert.Equal("+", leftBinary.Operator);
+        AssertAstEquivalent(expected, result.AstRoot);
     }
 
     [Fact]
@@ -79,10 +133,87 @@ public class AntlrLuaParserServiceAstMappingTests
     {
         var result = _sut.Parse("local msg = \"hello\"");
 
-        var program = Assert.IsType<ProgramNode>(result.AstRoot);
-        var statement = Assert.IsType<LocalDeclarationStatementNode>(Assert.Single(program.Statements));
-        var literal = Assert.IsType<StringLiteralExpressionNode>(statement.Value);
+        var expected = new ProgramNode
+        {
+            Statements = new List<StatementNode>
+            {
+                new LocalDeclarationStatementNode
+                {
+                    Name = "msg",
+                    Value = new StringLiteralExpressionNode { RawText = "\"hello\"" }
+                }
+            }
+        };
 
-        Assert.Equal("\"hello\"", literal.RawText);
+        AssertAstEquivalent(expected, result.AstRoot);
+    }
+
+    private static void AssertAstEquivalent(ProgramNode expected, ProgramNode? actual)
+    {
+        Assert.NotNull(actual);
+        Assert.Equivalent(ToComparableNode(expected), ToComparableNode(actual!), strict: true);
+    }
+
+    private static object ToComparableNode(AstNode node)
+    {
+        return node switch
+        {
+            ProgramNode program => new
+            {
+                Kind = program.Kind,
+                Statements = program.Statements.Select(ToComparableNode).ToList()
+            },
+            LocalDeclarationStatementNode localDecl => new
+            {
+                Kind = localDecl.Kind,
+                localDecl.Name,
+                Value = ToComparableNode(localDecl.Value)
+            },
+            AssignmentStatementNode assign => new
+            {
+                Kind = assign.Kind,
+                assign.Name,
+                Value = ToComparableNode(assign.Value)
+            },
+            ReturnStatementNode ret => new
+            {
+                Kind = ret.Kind,
+                Value = ToComparableNode(ret.Value)
+            },
+            ExpressionStatementNode exprStmt => new
+            {
+                Kind = exprStmt.Kind,
+                Expression = ToComparableNode(exprStmt.Expression)
+            },
+            IdentifierExpressionNode identifier => new
+            {
+                Kind = identifier.Kind,
+                identifier.Name
+            },
+            NumberLiteralExpressionNode number => new
+            {
+                Kind = number.Kind,
+                number.RawText
+            },
+            StringLiteralExpressionNode str => new
+            {
+                Kind = str.Kind,
+                str.RawText
+            },
+            BinaryExpressionNode binary => new
+            {
+                Kind = binary.Kind,
+                binary.Operator,
+                Left = ToComparableNode(binary.Left),
+                Right = ToComparableNode(binary.Right)
+            },
+            CallExpressionNode call => new
+            {
+                Kind = call.Kind,
+                call.FunctionName,
+                Arguments = call.Arguments.Select(ToComparableNode).ToList()
+            },
+            _ => throw new NotSupportedException($"Unsupported AST node type: {node.GetType().Name}")
+        };
     }
 }
