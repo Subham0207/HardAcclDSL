@@ -7,10 +7,12 @@ namespace HardAcclDslApi.Services;
 public class LuaToIR
 {
     private readonly AntlrLuaParserService _parserService;
+    private readonly ILogger<LuaToIR>? _logger;
 
-    public LuaToIR(AntlrLuaParserService parserService)
+    public LuaToIR(AntlrLuaParserService parserService, ILogger<LuaToIR>? logger = null)
     {
         _parserService = parserService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -26,6 +28,8 @@ public class LuaToIR
         }
 
         var parseResult = _parserService.Parse(luaCode);
+        _logger?.LogInformation("ANTLR parse tree: {ParseTree}", parseResult.ParseTree);
+
         if (!parseResult.IsValid)
         {
             var firstError = parseResult.Errors[0];
