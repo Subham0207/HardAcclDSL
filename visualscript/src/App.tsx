@@ -1,13 +1,18 @@
 import { useCallback, useMemo } from 'react'
 import {
   Background,
+  ConnectionMode,
   Controls,
+  Handle,
   MiniMap,
+  MarkerType,
+  Position,
   ReactFlow,
   addEdge,
   useEdgesState,
   useNodesState,
   type Connection,
+  type DefaultEdgeOptions,
   type Edge,
   type Node,
   type NodeProps,
@@ -24,6 +29,20 @@ type ScriptNodeData = {
 function ScriptNode({ data }: NodeProps<Node<ScriptNodeData>>) {
   return (
     <div className="script-node">
+      <Handle
+        id="in"
+        className="script-handle script-handle-in"
+        type="target"
+        position={Position.Left}
+        isConnectable
+      />
+      <Handle
+        id="out"
+        className="script-handle script-handle-out"
+        type="source"
+        position={Position.Right}
+        isConnectable
+      />
       <div className="script-node-label">{data.label}</div>
       <div className="script-node-role">{data.role}</div>
       <div className="script-node-detail">{data.detail}</div>
@@ -105,12 +124,33 @@ const initialNodes: Array<Node<ScriptNodeData>> = [
 ]
 
 const initialEdges: Edge[] = [
-  { id: 'e1', source: 'localDecl-1', target: 'binary-1', label: 'value' },
-  { id: 'e2', source: 'binary-1', target: 'number-1', label: 'left' },
-  { id: 'e3', source: 'binary-1', target: 'identifier-1', label: 'right' },
-  { id: 'e4', source: 'assign-1', target: 'call-1', label: 'value' },
-  { id: 'e5', source: 'return-1', target: 'identifier-1', label: 'value' },
+  { id: 'e1', source: 'localDecl-1', target: 'binary-1', label: 'value', animated: true },
+  { id: 'e2', source: 'binary-1', target: 'number-1', label: 'left', animated: true },
+  { id: 'e3', source: 'binary-1', target: 'identifier-1', label: 'right', animated: true },
+  { id: 'e4', source: 'assign-1', target: 'call-1', label: 'value', animated: true },
+  { id: 'e5', source: 'return-1', target: 'identifier-1', label: 'value', animated: true },
 ]
+
+const defaultEdgeOptions: DefaultEdgeOptions = {
+  type: 'smoothstep',
+  style: { stroke: '#1f5ea0', strokeWidth: 2.2 },
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    color: '#1f5ea0',
+  },
+  labelStyle: {
+    fill: '#0f3f70',
+    fontWeight: 700,
+    fontSize: 12,
+  },
+  labelBgPadding: [6, 3],
+  labelBgBorderRadius: 5,
+  labelBgStyle: {
+    fill: '#e9f4ff',
+    fillOpacity: 1,
+    stroke: '#9fc1e4',
+  },
+}
 
 function App() {
   const [nodes, , onNodesChange] = useNodesState(initialNodes)
@@ -154,6 +194,13 @@ function App() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             nodeTypes={nodeTypes}
+            connectionMode={ConnectionMode.Loose}
+            nodesConnectable
+            elementsSelectable
+            edgesFocusable
+            deleteKeyCode={['Backspace', 'Delete']}
+            defaultEdgeOptions={defaultEdgeOptions}
+            connectionLineStyle={{ stroke: '#1f5ea0', strokeWidth: 2.2 }}
             fitView
           >
             <Background gap={16} size={1} />

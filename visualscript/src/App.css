@@ -57,12 +57,32 @@
 }
 
 .script-node {
+  position: relative;
   min-width: 160px;
   border: 1px solid #bed0eb;
   border-radius: 10px;
   padding: 10px;
   background: linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%);
   box-shadow: 0 4px 10px rgba(26, 56, 91, 0.12);
+}
+
+.script-handle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background: #1f5ea0;
+  cursor: crosshair;
+  pointer-events: all;
+  z-index: 3;
+}
+
+.script-handle-in {
+  left: -7px;
+}
+
+.script-handle-out {
+  right: -7px;
 }
 
 .script-node-label {
@@ -83,6 +103,31 @@
   margin-top: 6px;
   font-size: 0.8rem;
   color: #315577;
+}
+
+.react-flow__node.selected .script-node {
+  border-color: #0f6ad1;
+  box-shadow:
+    0 0 0 3px rgba(15, 106, 209, 0.22),
+    0 10px 22px rgba(15, 80, 150, 0.3);
+}
+
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:focus .react-flow__edge-path,
+.react-flow__edge:focus-visible .react-flow__edge-path {
+  stroke: #ff6a00 !important;
+  stroke-width: 4 !important;
+  filter: drop-shadow(0 0 4px rgba(255, 106, 0, 0.55));
+}
+
+.react-flow__edge.selected .react-flow__edge-textbg {
+  fill: #fff0e1;
+  stroke: #ff6a00;
+}
+
+.react-flow__edge.selected .react-flow__edge-text {
+  fill: #9a3d00;
+  font-weight: 800;
 }
 
 @media (max-width: 900px) {
