@@ -12,6 +12,11 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 
 ## What We Have Implemented
 
+### 0) Repository and Tooling Notes
+- Frontend visual scripting app exists at `visualscript/` (Vite + React + TypeScript).
+- Frontend package manager is Yarn.
+- Use Yarn commands in `visualscript/` for install/run/build (`yarn`, `yarn dev`, `yarn build`).
+
 ### 1) ANTLR-based Parsing (replaces hand-written lexer complexity)
 - Added ANTLR runtime/build integration in the API project.
 - Added grammar file for a Lua subset.
@@ -33,6 +38,25 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Returns parse tree as a structured tree object (node + children), not only a string.
 - POST /api/lua/ast
 	- Returns AST only.
+
+### 3.1) Visual Script UI (React Flow Prototype)
+- Installed React Flow library (`@xyflow/react`) in `visualscript/`.
+- Replaced Vite starter page with a basic graph canvas prototype.
+- Added starter nodes for:
+	- LocalDeclaration
+	- Assignment
+	- Return
+	- FunctionCall
+	- Binary
+	- Identifier
+	- NumberLiteral
+- Added React Flow interactions:
+	- drag nodes
+	- connect edges
+	- minimap
+	- controls
+	- background grid
+- Current graph is a prototype view model for AST concepts and is not yet wired to backend AST APIs.
 
 AST JSON contract (latest):
 - `kind` is the only node discriminator in API responses.
@@ -90,6 +114,8 @@ Decision:
    - AST -> Lua -> AST (shape stability for supported subset)
 4. Add function declaration grammar + AST mapping (`FunctionDeclarationNode`).
 5. Decide NodeId lifecycle strategy for visual editor persistence and patch operations.
+6. Connect UI graph state with AST API endpoints (`/api/lua/ast`, `/api/lua/convert`).
+7. Implement graph-to-Lua generation using templates (node-driven rendering, e.g., function declaration template filled from node data).
 
 ## Architectural Notes
 - Keep parser internals (ANTLR rule/token names) isolated from frontend contracts.
@@ -97,6 +123,7 @@ Decision:
 - Preserve source spans on AST nodes where feasible for diagnostics and editor mapping.
 - NodeId is currently non-semantic metadata and is intentionally ignored in AST equality tests.
 - AST API payloads should remain stable around `kind` to keep frontend integrations predictable.
+- Graph-to-Lua generation direction: template-based emitters per node type (for example FunctionDeclaration template).
 
 ## Why This Direction
 This direction directly supports product requirements:
