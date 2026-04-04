@@ -34,6 +34,13 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - POST /api/lua/ast
 	- Returns AST only.
 
+AST JSON contract (latest):
+- `kind` is the only node discriminator in API responses.
+- `$type` metadata is intentionally not emitted.
+- Node-specific fields are emitted based on node kind (e.g., `name`, `value`, `operator`, `arguments`).
+- Implemented via a custom AST JSON converter for serialization.
+- AST deserialization from JSON is not implemented yet.
+
 ### 4) Tests
 - Tests are split by concern/file:
 	- LuaToIR integration tests
@@ -89,6 +96,7 @@ Decision:
 - Expose AST DTOs to the visual scripting layer, not parse tree DTOs.
 - Preserve source spans on AST nodes where feasible for diagnostics and editor mapping.
 - NodeId is currently non-semantic metadata and is intentionally ignored in AST equality tests.
+- AST API payloads should remain stable around `kind` to keep frontend integrations predictable.
 
 ## Why This Direction
 This direction directly supports product requirements:
