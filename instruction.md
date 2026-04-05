@@ -40,6 +40,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Returns AST only.
 - POST /api/lua/graph-snapshot
 	- Receives typed VisualScript graph snapshot JSON and returns an acknowledgement (node/edge counts).
+- POST /api/lua/graph-to-ast
+	- Receives typed VisualScript graph snapshot JSON and returns mapped AST + diagnostics.
 
 ### 3.1) Visual Script UI (React Flow Prototype)
 - Installed React Flow library (`@xyflow/react`) in `visualscript/`.
@@ -91,7 +93,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- no Statement/Expression/AstNode role text shown in node cards
 	- operator nodes no longer show an extra operator-symbol row
 - Editable node fields now persist into graph state (instead of staying as initial default values).
-- Frontend now captures and sends graph snapshot JSON to backend (`/api/lua/graph-snapshot`).
+- New nodes now use UUID ids (`crypto.randomUUID`) in frontend graph creation.
+- Frontend now captures and sends graph snapshot JSON to backend mapping route (`/api/lua/graph-to-ast`).
 - Frontend graph-to-AST conversion was intentionally removed; backend will own graph-to-AST mapping.
 - Backend now uses explicit `VisualScriptGraph...` naming for clarity:
 	- `VisualScriptGraphSnapshotDto`
@@ -101,6 +104,13 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- what is connected to a pin
 	- what node owns a pin
 	- what node executes next via `exec-out -> exec-in`
+- Backend mapper service now exists: `VisualScriptGraphToAstMapper`.
+- Current mapper coverage:
+	- statement nodes: `localDecl`, `assignment`, `return`, `print`
+	- expression nodes: `identifier`, `numberLiteral`, `add/subtract/multiply/divide/modulo`
+	- execution ordering from `exec-out -> exec-in`
+	- diagnostics collection for cycles/unsupported nodes/invalid assignment target
+	- `localDecl` used as expression source maps to identifier by variable name
 
 AST JSON contract (latest):
 - `kind` is the only node discriminator in API responses.
@@ -114,7 +124,8 @@ AST JSON contract (latest):
 	- LuaToIR integration tests
 	- ANTLR parser result tests (Lua -> parser output)
 	- ANTLR to AST mapping tests
-- Current count: 18 passing tests.
+- VisualScript graph-to-AST mapper tests
+- Current count: 19 passing tests.
 - AST mapping tests verify whole-tree structural equality while ignoring NodeId.
 
 ### 5) AST Model (Updated)
@@ -154,8 +165,8 @@ Decision:
 
 ## Next Steps (AST-First Plan)
 1. Add server-side snapshot validation diagnostics on top of `VisualScriptGraphIndex`.
-2. Implement backend graph -> AST mapper using execution flow ordering + data flow expressions.
-3. Add endpoint to return mapped AST from snapshot (or extend `/api/lua/graph-snapshot` response with AST).
+2. Expand backend graph -> AST mapper coverage and edge-case handling.
+3. Add richer diagnostic payloads (pin/edge-level context for easier UI debugging).
 4. Add AST validation diagnostics (semantic and placement checks).
 5. Implement AST -> Lua code generator (templated printer).
 6. Add round-trip tests:
