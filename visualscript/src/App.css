@@ -49,6 +49,39 @@
   color: #35577a;
 }
 
+.legend-help {
+  margin: 0 0 10px;
+  font-size: 0.84rem;
+  color: #4f6f92;
+}
+
+.legend-buttons {
+  display: grid;
+  gap: 8px;
+}
+
+.legend-node-btn {
+  border: 1px solid #c6d8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #15426d;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.legend-node-btn:hover {
+  background: #eef5ff;
+  border-color: #95bae3;
+}
+
+.legend-node-btn:focus-visible {
+  outline: 2px solid #2c78c6;
+  outline-offset: 2px;
+}
+
 .flow-host {
   border: 1px solid #d9e3f3;
   border-radius: 14px;
