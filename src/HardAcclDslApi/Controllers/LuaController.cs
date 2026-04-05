@@ -1,8 +1,8 @@
 using HardAcclDslApi.Services;
 using HardAcclDslApi.Models.Parsing;
 using HardAcclDslApi.Models.Ast;
+using HardAcclDslApi.Models.Graph;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace HardAcclDslApi.Controllers;
 
@@ -93,32 +93,23 @@ public class LuaController : ControllerBase
     }
 
     [HttpPost("graph-snapshot")]
-    public ActionResult<GraphSnapshotAckResponse> GraphSnapshot([FromBody] JsonElement snapshot)
+    public ActionResult<VisualScriptGraphSnapshotAckResponse> GraphSnapshot([FromBody] VisualScriptGraphSnapshotDto snapshot)
     {
-        if (snapshot.ValueKind != JsonValueKind.Object)
+        if (snapshot is null)
         {
-            return BadRequest("Graph snapshot object is required.");
+            return BadRequest("Graph snapshot is required.");
         }
 
-        var nodeCount = 0;
-        var edgeCount = 0;
+        var index = new VisualScriptGraphIndex(snapshot);
+        var nodeCount = snapshot.Nodes.Count;
+        var edgeCount = snapshot.Edges.Count;
 
-        if (snapshot.TryGetProperty("nodes", out var nodes) && nodes.ValueKind == JsonValueKind.Array)
-        {
-            nodeCount = nodes.GetArrayLength();
-        }
-
-        if (snapshot.TryGetProperty("edges", out var edges) && edges.ValueKind == JsonValueKind.Array)
-        {
-            edgeCount = edges.GetArrayLength();
-        }
-
-        return Ok(new GraphSnapshotAckResponse
+        return Ok(new VisualScriptGraphSnapshotAckResponse
         {
             Accepted = true,
             NodeCount = nodeCount,
             EdgeCount = edgeCount,
-            Message = "Graph snapshot received."
+            Message = "Graph snapshot received and indexed."
         });
     }
 }
@@ -147,7 +138,7 @@ public sealed class AstOnlyResponse
     public ProgramNode Ast { get; init; } = new();
 }
 
-public sealed class GraphSnapshotAckResponse
+public sealed class VisualScriptGraphSnapshotAckResponse
 {
     public bool Accepted { get; init; }
     public int NodeCount { get; init; }
