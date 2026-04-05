@@ -2,6 +2,7 @@ using HardAcclDslApi.Services;
 using HardAcclDslApi.Models.Parsing;
 using HardAcclDslApi.Models.Ast;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace HardAcclDslApi.Controllers;
 
@@ -90,6 +91,36 @@ public class LuaController : ControllerBase
             Ast = parseResult.AstRoot ?? new ProgramNode()
         });
     }
+
+    [HttpPost("graph-snapshot")]
+    public ActionResult<GraphSnapshotAckResponse> GraphSnapshot([FromBody] JsonElement snapshot)
+    {
+        if (snapshot.ValueKind != JsonValueKind.Object)
+        {
+            return BadRequest("Graph snapshot object is required.");
+        }
+
+        var nodeCount = 0;
+        var edgeCount = 0;
+
+        if (snapshot.TryGetProperty("nodes", out var nodes) && nodes.ValueKind == JsonValueKind.Array)
+        {
+            nodeCount = nodes.GetArrayLength();
+        }
+
+        if (snapshot.TryGetProperty("edges", out var edges) && edges.ValueKind == JsonValueKind.Array)
+        {
+            edgeCount = edges.GetArrayLength();
+        }
+
+        return Ok(new GraphSnapshotAckResponse
+        {
+            Accepted = true,
+            NodeCount = nodeCount,
+            EdgeCount = edgeCount,
+            Message = "Graph snapshot received."
+        });
+    }
 }
 
 public sealed class LuaConvertRequest
@@ -114,4 +145,12 @@ public sealed class ParseTreeOnlyResponse
 public sealed class AstOnlyResponse
 {
     public ProgramNode Ast { get; init; } = new();
+}
+
+public sealed class GraphSnapshotAckResponse
+{
+    public bool Accepted { get; init; }
+    public int NodeCount { get; init; }
+    public int EdgeCount { get; init; }
+    public string Message { get; init; } = string.Empty;
 }

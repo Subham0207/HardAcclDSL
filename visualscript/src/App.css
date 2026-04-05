@@ -60,6 +60,26 @@
   gap: 8px;
 }
 
+.legend-ast-preview {
+  margin: 12px 0 0;
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid #d3e2f7;
+  border-radius: 8px;
+  background: #f6faff;
+  padding: 8px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #183d62;
+}
+
+.legend-send-status {
+  margin: 8px 0 0;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  color: #1d4a78;
+}
+
 .legend-node-btn {
   border: 1px solid #c6d8f0;
   border-radius: 8px;
@@ -70,6 +90,18 @@
   text-align: left;
   padding: 8px 10px;
   cursor: pointer;
+}
+
+.legend-node-btn-primary {
+  margin-bottom: 10px;
+  background: #1f5ea0;
+  color: #ffffff;
+  border-color: #1f5ea0;
+}
+
+.legend-node-btn-primary:hover {
+  background: #184c82;
+  border-color: #184c82;
 }
 
 .legend-node-btn:hover {

@@ -1,8 +1,16 @@
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Handle, Position, useReactFlow, type NodeProps } from '@xyflow/react'
 import { NodeFrame } from './components/NodeFrame'
-import type { IdentifierFlowNode } from './types'
+import type { IdentifierFlowNode, ScriptFlowNode } from './types'
 
-export function IdentifierNode({ data }: NodeProps<IdentifierFlowNode>) {
+export function IdentifierNode({ id, data }: NodeProps<IdentifierFlowNode>) {
+  const { setNodes } = useReactFlow<ScriptFlowNode>()
+
+  const updateData = (patch: Partial<IdentifierFlowNode['data']>) => {
+    setNodes((nodes) =>
+      nodes.map((node) => (node.id === id ? ({ ...node, data: { ...node.data, ...patch } } as ScriptFlowNode) : node)),
+    )
+  }
+
   return (
     <NodeFrame
       label={data.label}
@@ -17,7 +25,12 @@ export function IdentifierNode({ data }: NodeProps<IdentifierFlowNode>) {
         <div className="script-node-fields">
           <label className="script-node-field">
             <span>name</span>
-            <input className="script-node-input" defaultValue={data.variableName} placeholder="myVar" />
+            <input
+              className="script-node-input"
+              value={data.variableName}
+              onChange={(event) => updateData({ variableName: event.target.value })}
+              placeholder="myVar"
+            />
           </label>
         </div>
       }

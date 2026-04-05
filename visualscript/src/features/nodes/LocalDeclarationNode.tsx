@@ -1,8 +1,16 @@
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Handle, Position, useReactFlow, type NodeProps } from '@xyflow/react'
 import { NodeFrame } from './components/NodeFrame'
-import type { LocalDeclarationFlowNode } from './types'
+import type { LocalDeclarationFlowNode, ScriptFlowNode } from './types'
 
-export function LocalDeclarationNode({ data }: NodeProps<LocalDeclarationFlowNode>) {
+export function LocalDeclarationNode({ id, data }: NodeProps<LocalDeclarationFlowNode>) {
+  const { setNodes } = useReactFlow<ScriptFlowNode>()
+
+  const updateData = (patch: Partial<LocalDeclarationFlowNode['data']>) => {
+    setNodes((nodes) =>
+      nodes.map((node) => (node.id === id ? ({ ...node, data: { ...node.data, ...patch } } as ScriptFlowNode) : node)),
+    )
+  }
+
   return (
     <NodeFrame
       label={data.label}
@@ -35,11 +43,21 @@ export function LocalDeclarationNode({ data }: NodeProps<LocalDeclarationFlowNod
         <div className="script-node-fields">
           <label className="script-node-field">
             <span>name</span>
-            <input className="script-node-input" defaultValue={data.variableName} placeholder="result" />
+            <input
+              className="script-node-input"
+              value={data.variableName}
+              onChange={(event) => updateData({ variableName: event.target.value })}
+              placeholder="result"
+            />
           </label>
           <label className="script-node-field">
             <span>value</span>
-            <input className="script-node-input" defaultValue={data.initialValue} placeholder="0" />
+            <input
+              className="script-node-input"
+              value={data.initialValue}
+              onChange={(event) => updateData({ initialValue: event.target.value })}
+              placeholder="0"
+            />
           </label>
         </div>
       }

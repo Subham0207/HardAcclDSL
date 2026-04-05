@@ -17,9 +17,11 @@ import { defaultEdgeOptions } from './defaultEdgeOptions'
 import { createStarterNode, initialEdges, initialNodes, type StarterNodeType } from './initialGraph'
 import { scriptNodeTypes } from '../nodes/nodeTypes'
 import type { ScriptFlowNode } from '../nodes/types'
+import { buildGraphSnapshot, type GraphSnapshot } from './graphSnapshot'
 
 export type GraphCanvasHandle = {
   addNodeAtViewportCenter: (type: StarterNodeType) => void
+  exportGraphSnapshot: () => GraphSnapshot
 }
 
 type GraphCanvasProps = {
@@ -101,8 +103,9 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         const node = createStarterNode(type, { x: center.x - 80, y: center.y - 38 }, id)
         setNodes((current) => [...current, node])
       },
+      exportGraphSnapshot: () => buildGraphSnapshot(nodes, edges),
     }),
-    [setNodes, viewportRef],
+    [edges, nodes, setNodes, viewportRef],
   )
 
   return (
