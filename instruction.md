@@ -39,7 +39,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - POST /api/lua/ast
 	- Returns AST only.
 - POST /api/lua/graph-snapshot
-	- Receives raw visual graph snapshot JSON and returns an acknowledgement (node/edge counts).
+	- Receives typed VisualScript graph snapshot JSON and returns an acknowledgement (node/edge counts).
 
 ### 3.1) Visual Script UI (React Flow Prototype)
 - Installed React Flow library (`@xyflow/react`) in `visualscript/`.
@@ -93,6 +93,14 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Editable node fields now persist into graph state (instead of staying as initial default values).
 - Frontend now captures and sends graph snapshot JSON to backend (`/api/lua/graph-snapshot`).
 - Frontend graph-to-AST conversion was intentionally removed; backend will own graph-to-AST mapping.
+- Backend now uses explicit `VisualScriptGraph...` naming for clarity:
+	- `VisualScriptGraphSnapshotDto`
+	- `VisualScriptGraphIndex`
+	- `VisualScriptGraphSnapshotAckResponse`
+- Backend helper index (`VisualScriptGraphIndex`) exists and can answer:
+	- what is connected to a pin
+	- what node owns a pin
+	- what node executes next via `exec-out -> exec-in`
 
 AST JSON contract (latest):
 - `kind` is the only node discriminator in API responses.
@@ -145,7 +153,7 @@ Decision:
 - AST will be the source of truth for visual scripting and Lua emission.
 
 ## Next Steps (AST-First Plan)
-1. Add backend graph snapshot contracts (DTOs) and validation diagnostics.
+1. Add server-side snapshot validation diagnostics on top of `VisualScriptGraphIndex`.
 2. Implement backend graph -> AST mapper using execution flow ordering + data flow expressions.
 3. Add endpoint to return mapped AST from snapshot (or extend `/api/lua/graph-snapshot` response with AST).
 4. Add AST validation diagnostics (semantic and placement checks).
