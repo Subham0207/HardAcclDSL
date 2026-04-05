@@ -38,6 +38,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Returns parse tree as a structured tree object (node + children), not only a string.
 - POST /api/lua/ast
 	- Returns AST only.
+- POST /api/lua/graph-snapshot
+	- Receives raw visual graph snapshot JSON and returns an acknowledgement (node/edge counts).
 
 ### 3.1) Visual Script UI (React Flow Prototype)
 - Installed React Flow library (`@xyflow/react`) in `visualscript/`.
@@ -88,7 +90,9 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - UI node metadata simplification:
 	- no Statement/Expression/AstNode role text shown in node cards
 	- operator nodes no longer show an extra operator-symbol row
-- Current graph is a prototype view model for AST concepts and is not yet wired to backend AST APIs.
+- Editable node fields now persist into graph state (instead of staying as initial default values).
+- Frontend now captures and sends graph snapshot JSON to backend (`/api/lua/graph-snapshot`).
+- Frontend graph-to-AST conversion was intentionally removed; backend will own graph-to-AST mapping.
 
 AST JSON contract (latest):
 - `kind` is the only node discriminator in API responses.
@@ -141,19 +145,18 @@ Decision:
 - AST will be the source of truth for visual scripting and Lua emission.
 
 ## Next Steps (AST-First Plan)
-1. Add graph execution-flow validation rules:
-	- execution handles should connect only to execution handles
-	- data handles should connect only to data handles
-	- enforce statement ordering constraints
-2. Add AST validation diagnostics (semantic and placement checks).
-3. Implement AST -> Lua code generator (templated printer).
-4. Add round-trip tests:
+1. Add backend graph snapshot contracts (DTOs) and validation diagnostics.
+2. Implement backend graph -> AST mapper using execution flow ordering + data flow expressions.
+3. Add endpoint to return mapped AST from snapshot (or extend `/api/lua/graph-snapshot` response with AST).
+4. Add AST validation diagnostics (semantic and placement checks).
+5. Implement AST -> Lua code generator (templated printer).
+6. Add round-trip tests:
    - Lua -> AST -> Lua (semantic equivalence)
    - AST -> Lua -> AST (shape stability for supported subset)
-5. Add function declaration grammar + AST mapping (`FunctionDeclarationNode`).
-6. Decide NodeId lifecycle strategy for visual editor persistence and patch operations.
-7. Connect UI graph state with AST API endpoints (`/api/lua/ast`, `/api/lua/convert`).
-8. Implement graph-to-Lua generation using templates (node-driven rendering, starting with execution nodes like LocalDeclaration and Print).
+7. Add function declaration grammar + AST mapping (`FunctionDeclarationNode`).
+8. Decide NodeId lifecycle strategy for visual editor persistence and patch operations.
+9. Connect snapshot->AST pipeline with existing `/api/lua/convert` and generation flows.
+10. Implement graph-to-Lua generation using templates (node-driven rendering, starting with execution nodes like LocalDeclaration and Print).
 
 ## Execution Flow Rules (UI Graph)
 Current intent for execution-enabled nodes (first pass):
@@ -169,7 +172,7 @@ Allowed connection examples:
 - `NumberLiteral.out` -> `Add.right`
 - `Add.out` -> `Print.value`
 
-Forbidden connection examples (to be validated in UI):
+Forbidden connection examples:
 - `exec-out` -> data handle (`left`, `right`, `value`, `out`)
 - data handle (`out`) -> `exec-in`
 - `exec-in` -> `exec-in`
