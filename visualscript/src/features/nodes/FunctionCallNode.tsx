@@ -13,6 +13,9 @@ export function FunctionCallNode({ data }: NodeProps<FunctionCallFlowNode>) {
         style={{ top: '35%' }}
         isConnectable
       />
+      <span className="script-handle-label script-handle-label-in" style={{ top: '35%' }}>
+        arg0
+      </span>
       <Handle
         id="arg1"
         type="target"
@@ -21,7 +24,11 @@ export function FunctionCallNode({ data }: NodeProps<FunctionCallFlowNode>) {
         style={{ top: '70%' }}
         isConnectable
       />
+      <span className="script-handle-label script-handle-label-in" style={{ top: '70%' }}>
+        arg1
+      </span>
       <Handle id="out" type="source" position={Position.Right} className="script-handle script-handle-out" isConnectable />
+      <span className="script-handle-label script-handle-label-out">out</span>
     </NodeFrame>
   )
 }

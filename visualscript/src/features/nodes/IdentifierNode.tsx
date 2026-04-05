@@ -6,6 +6,7 @@ export function IdentifierNode({ data }: NodeProps<IdentifierFlowNode>) {
   return (
     <NodeFrame label={data.label} role={data.role} detail={data.detail}>
       <Handle id="out" type="source" position={Position.Right} className="script-handle script-handle-out" isConnectable />
+      <span className="script-handle-label script-handle-label-out">out</span>
     </NodeFrame>
   )
 }

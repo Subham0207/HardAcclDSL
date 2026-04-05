@@ -66,6 +66,10 @@
   box-shadow: 0 4px 10px rgba(26, 56, 91, 0.12);
 }
 
+.script-node-content {
+  padding: 0 44px;
+}
+
 .script-handle {
   width: 14px;
   height: 14px;
@@ -83,6 +87,33 @@
 
 .script-handle-out {
   right: -7px;
+}
+
+.script-handle-label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 34px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #1f5ea0;
+  background: #ffffff;
+  border: 1px solid #d0def3;
+  border-radius: 999px;
+  padding: 2px 6px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.script-handle-label-in {
+  left: 6px;
+  text-align: right;
+}
+
+.script-handle-label-out {
+  right: 6px;
+  text-align: left;
 }
 
 .script-node-label {

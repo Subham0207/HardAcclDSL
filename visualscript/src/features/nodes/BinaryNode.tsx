@@ -13,6 +13,9 @@ export function BinaryNode({ data }: NodeProps<BinaryFlowNode>) {
         style={{ top: '35%' }}
         isConnectable
       />
+      <span className="script-handle-label script-handle-label-in" style={{ top: '35%' }}>
+        left
+      </span>
       <Handle
         id="right"
         type="target"
@@ -21,7 +24,11 @@ export function BinaryNode({ data }: NodeProps<BinaryFlowNode>) {
         style={{ top: '70%' }}
         isConnectable
       />
+      <span className="script-handle-label script-handle-label-in" style={{ top: '70%' }}>
+        right
+      </span>
       <Handle id="out" type="source" position={Position.Right} className="script-handle script-handle-out" isConnectable />
+      <span className="script-handle-label script-handle-label-out">out</span>
     </NodeFrame>
   )
 }
