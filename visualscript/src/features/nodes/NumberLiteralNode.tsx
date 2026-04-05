@@ -6,7 +6,6 @@ export function NumberLiteralNode({ data }: NodeProps<NumberLiteralFlowNode>) {
   return (
     <NodeFrame
       label={data.label}
-      role={data.role}
       detail={data.detail}
       rightRail={
         <div className="script-port script-port-out">

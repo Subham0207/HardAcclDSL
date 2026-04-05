@@ -6,7 +6,6 @@ export function ReturnNode({ data }: NodeProps<ReturnFlowNode>) {
   return (
     <NodeFrame
       label={data.label}
-      role={data.role}
       detail={data.detail}
       leftRail={
         <div className="script-port script-port-in">

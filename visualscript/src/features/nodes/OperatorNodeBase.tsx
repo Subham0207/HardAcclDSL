@@ -8,7 +8,6 @@ export function OperatorNodeBase({ data }: OperatorNodeBaseProps) {
   return (
     <NodeFrame
       label={data.label}
-      role={data.role}
       detail={data.detail}
       leftRail={
         <>
@@ -28,7 +27,6 @@ export function OperatorNodeBase({ data }: OperatorNodeBaseProps) {
           <span className="script-handle-label">out</span>
         </div>
       }
-      body={<div className="script-node-operator">{data.operatorSymbol}</div>}
     />
   )
 }

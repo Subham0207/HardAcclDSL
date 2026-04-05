@@ -6,7 +6,6 @@ export function FunctionCallNode({ data }: NodeProps<FunctionCallFlowNode>) {
   return (
     <NodeFrame
       label={data.label}
-      role={data.role}
       detail={data.detail}
       leftRail={
         <>

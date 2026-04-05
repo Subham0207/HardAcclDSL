@@ -6,7 +6,6 @@ export function AssignmentNode({ data }: NodeProps<AssignmentFlowNode>) {
   return (
     <NodeFrame
       label={data.label}
-      role={data.role}
       detail={data.detail}
       leftRail={
         <>

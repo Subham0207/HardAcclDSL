@@ -6,7 +6,6 @@ export function LocalDeclarationNode({ data }: NodeProps<LocalDeclarationFlowNod
   return (
     <NodeFrame
       label={data.label}
-      role={data.role}
       detail={data.detail}
       leftRail={
         <div className="script-port script-port-in">

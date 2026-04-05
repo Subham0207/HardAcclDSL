@@ -93,7 +93,7 @@
   min-width: 160px;
   border: 1px solid #bed0eb;
   border-radius: 10px;
-  padding: 10px;
+  padding: 10px 0;
   background: linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%);
   box-shadow: 0 4px 10px rgba(26, 56, 91, 0.12);
 }
@@ -175,14 +175,6 @@
   color: #12365a;
 }
 
-.script-node-role {
-  margin-top: 4px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #4f77a1;
-}
-
 .script-node-detail {
   margin-top: 6px;
   font-size: 0.8rem;
@@ -221,13 +213,6 @@
 .script-node-input:focus-visible {
   outline: 2px solid #2c78c6;
   outline-offset: 1px;
-}
-
-.script-node-operator {
-  margin-top: 8px;
-  font-size: 1rem;
-  font-weight: 800;
-  color: #154a7a;
 }
 
 .react-flow__node.selected .script-node {
