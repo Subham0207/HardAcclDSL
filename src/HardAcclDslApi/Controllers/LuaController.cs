@@ -12,11 +12,16 @@ public class LuaController : ControllerBase
 {
     private readonly LuaToIR _luaToIr;
     private readonly AntlrLuaParserService _parserService;
+    private readonly VisualScriptGraphToAstMapper _graphToAstMapper;
 
-    public LuaController(LuaToIR luaToIr, AntlrLuaParserService parserService)
+    public LuaController(
+        LuaToIR luaToIr,
+        AntlrLuaParserService parserService,
+        VisualScriptGraphToAstMapper graphToAstMapper)
     {
         _luaToIr = luaToIr;
         _parserService = parserService;
+        _graphToAstMapper = graphToAstMapper;
     }
 
     [HttpPost("convert")]
@@ -112,6 +117,22 @@ public class LuaController : ControllerBase
             Message = "Graph snapshot received and indexed."
         });
     }
+
+    [HttpPost("graph-to-ast")]
+    public ActionResult<VisualScriptGraphToAstResponse> GraphToAst([FromBody] VisualScriptGraphSnapshotDto snapshot)
+    {
+        if (snapshot is null)
+        {
+            return BadRequest("Graph snapshot is required.");
+        }
+
+        var result = _graphToAstMapper.Map(snapshot);
+        return Ok(new VisualScriptGraphToAstResponse
+        {
+            Ast = result.Ast,
+            Diagnostics = result.Diagnostics,
+        });
+    }
 }
 
 public sealed class LuaConvertRequest
@@ -144,4 +165,11 @@ public sealed class VisualScriptGraphSnapshotAckResponse
     public int NodeCount { get; init; }
     public int EdgeCount { get; init; }
     public string Message { get; init; } = string.Empty;
+}
+
+public sealed class VisualScriptGraphToAstResponse
+{
+    public ProgramNode Ast { get; init; } = new();
+    public IReadOnlyList<VisualScriptGraphDiagnostic> Diagnostics { get; init; } =
+        Array.Empty<VisualScriptGraphDiagnostic>();
 }

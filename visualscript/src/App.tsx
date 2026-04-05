@@ -34,7 +34,7 @@ function App() {
               setGraphPreview(JSON.stringify(snapshot, null, 2))
 
               try {
-                const response = await fetch('/api/lua/graph-snapshot', {
+                const response = await fetch('/api/lua/graph-to-ast', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
