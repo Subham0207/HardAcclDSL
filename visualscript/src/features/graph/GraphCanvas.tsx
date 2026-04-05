@@ -99,7 +99,11 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
           y: rect.top + rect.height / 2,
         })
 
-        const id = `${type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+        if (typeof crypto === 'undefined' || typeof crypto.randomUUID !== 'function') {
+          throw new Error('crypto.randomUUID is required to create visual script node IDs.')
+        }
+
+        const id = crypto.randomUUID()
         const node = createStarterNode(type, { x: center.x - 80, y: center.y - 38 }, id)
         setNodes((current) => [...current, node])
       },
