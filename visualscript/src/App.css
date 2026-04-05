@@ -141,6 +141,10 @@
   flex-direction: row-reverse;
 }
 
+.script-port-exec {
+  margin-bottom: 2px;
+}
+
 .script-handle {
   position: relative !important;
   top: auto !important;
@@ -167,6 +171,18 @@
   border-radius: 999px;
   padding: 2px 6px;
   pointer-events: none;
+}
+
+.script-handle-exec {
+  background: #2b8a3e;
+  border-color: #e7f7eb;
+  box-shadow: 0 0 0 1px #1f6c31;
+}
+
+.script-handle-label-exec {
+  color: #1f6c31;
+  border-color: #abd8b6;
+  background: #e9f8ee;
 }
 
 .script-node-label {

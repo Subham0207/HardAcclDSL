@@ -3,9 +3,11 @@ import {
   Background,
   ConnectionMode,
   Controls,
+  MarkerType,
   MiniMap,
   ReactFlow,
   type ReactFlowInstance,
+  type Edge,
   addEdge,
   useEdgesState,
   useNodesState,
@@ -34,6 +36,29 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
 
   const onConnect = useCallback(
     (connection: Connection) => {
+      const isExecutionEdge =
+        connection.sourceHandle?.startsWith('exec-') && connection.targetHandle?.startsWith('exec-')
+
+      if (isExecutionEdge && connection.source && connection.target) {
+        const executionEdge: Edge = {
+          id: `exec-${connection.source}-${connection.sourceHandle ?? 'none'}-${connection.target}-${connection.targetHandle ?? 'none'}-${Date.now()}`,
+          source: connection.source,
+          target: connection.target,
+          sourceHandle: connection.sourceHandle,
+          targetHandle: connection.targetHandle,
+          type: 'smoothstep',
+          animated: true,
+          style: { stroke: '#2b8a3e', strokeWidth: 3, strokeDasharray: '6 4' },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: '#2b8a3e',
+          },
+        }
+
+        setEdges((current) => addEdge(executionEdge, current))
+        return
+      }
+
       setEdges((current) => addEdge({ ...connection, animated: true }, current))
     },
     [setEdges],

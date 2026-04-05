@@ -52,12 +52,20 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- LocalDeclaration
 	- Assignment
 	- Return
-	- FunctionCall
-	- Binary
+	- Print
+	- Add
+	- Subtract
+	- Multiply
+	- Divide
+	- Modulo
 	- Identifier
 	- NumberLiteral
 - Each node now owns its own pin/handle definitions directly using React Flow `Handle` (no wrapper abstraction).
-- Initial graph now uses explicit `sourceHandle` and `targetHandle` ids for clearer field-level wiring.
+- Node frame layout is now a 3-column flex structure:
+	- left rail for input handles
+	- center body for node content
+	- right rail for output handles
+- Initial graph uses explicit `sourceHandle` and `targetHandle` ids for clearer field-level wiring.
 - Added React Flow interactions:
 	- drag nodes
 	- connect edges via visible input/output pins (handles)
@@ -69,6 +77,13 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Added visual selection feedback:
 	- selected node gets stronger border/glow
 	- selected edge changes to a high-contrast highlight color
+- Added execution-flow prototype support (first pass):
+	- LocalDeclaration and Print include `exec-in` and `exec-out` handles
+	- execution handles use distinct styling from data handles
+	- execution edges (exec -> exec) use a distinct dashed green style and marker
+- UI node metadata simplification:
+	- no Statement/Expression/AstNode role text shown in node cards
+	- operator nodes no longer show an extra operator-symbol row
 - Current graph is a prototype view model for AST concepts and is not yet wired to backend AST APIs.
 
 AST JSON contract (latest):
@@ -92,6 +107,7 @@ AST JSON contract (latest):
 - Statement and expression families are not split into separate base classes.
 - `FunctionCallNode` is used directly for call statements.
 - `FunctionDeclarationNode` exists in the AST model as a planned node type (grammar/mapping for function declarations is not implemented yet).
+- Visual editor currently models function invocation as explicit `Print` node semantics rather than generic function-call semantics.
 
 ## Current Grammar Scope (Lua Subset)
 Supported now:
@@ -99,6 +115,7 @@ Supported now:
 - assignment: a = expression
 - return expression
 - function calls: f(x, y)
+- print call usage (via existing call-expression grammar path)
 - expressions with +, -, *, /
 - number and string literals
 - line comments with --
@@ -120,15 +137,51 @@ Decision:
 - AST will be the source of truth for visual scripting and Lua emission.
 
 ## Next Steps (AST-First Plan)
-1. Add AST validation diagnostics (semantic and placement checks).
-2. Implement AST -> Lua code generator (templated printer).
-3. Add round-trip tests:
+1. Add graph execution-flow validation rules:
+	- execution handles should connect only to execution handles
+	- data handles should connect only to data handles
+	- enforce statement ordering constraints
+2. Add AST validation diagnostics (semantic and placement checks).
+3. Implement AST -> Lua code generator (templated printer).
+4. Add round-trip tests:
    - Lua -> AST -> Lua (semantic equivalence)
    - AST -> Lua -> AST (shape stability for supported subset)
-4. Add function declaration grammar + AST mapping (`FunctionDeclarationNode`).
-5. Decide NodeId lifecycle strategy for visual editor persistence and patch operations.
-6. Connect UI graph state with AST API endpoints (`/api/lua/ast`, `/api/lua/convert`).
-7. Implement graph-to-Lua generation using templates (node-driven rendering, e.g., function declaration template filled from node data).
+5. Add function declaration grammar + AST mapping (`FunctionDeclarationNode`).
+6. Decide NodeId lifecycle strategy for visual editor persistence and patch operations.
+7. Connect UI graph state with AST API endpoints (`/api/lua/ast`, `/api/lua/convert`).
+8. Implement graph-to-Lua generation using templates (node-driven rendering, starting with execution nodes like LocalDeclaration and Print).
+
+## Execution Flow Rules (UI Graph)
+Current intent for execution-enabled nodes (first pass):
+- LocalDeclaration and Print are execution statements and expose:
+	- `exec-in` (target)
+	- `exec-out` (source)
+- Execution flow determines statement order in generated Lua.
+- Data flow provides expression values and does not by itself define statement order.
+
+Allowed connection examples:
+- `LocalDeclaration.exec-out` -> `Print.exec-in`
+- `LocalDeclaration.out` -> `Add.left`
+- `NumberLiteral.out` -> `Add.right`
+- `Add.out` -> `Print.value`
+
+Forbidden connection examples (to be validated in UI):
+- `exec-out` -> data handle (`left`, `right`, `value`, `out`)
+- data handle (`out`) -> `exec-in`
+- `exec-in` -> `exec-in`
+- `exec-out` -> `exec-out`
+- multiple incoming execution edges to one `exec-in` (unless branching is introduced later)
+
+Ordering semantics for code generation:
+- Follow execution chain from entry statement(s) using execution edges.
+- For each execution statement, resolve its required data inputs from data edges.
+- Example graph:
+	- LocalDeclaration sets `a = 10`
+	- Add computes `a + 20`
+	- Print prints Add result
+- Expected Lua:
+	- `local a = 10`
+	- `print(a + 20)`
 
 ## Architectural Notes
 - Keep parser internals (ANTLR rule/token names) isolated from frontend contracts.
