@@ -15,7 +15,7 @@ export type LocalDeclarationNodeData = BaseScriptNodeData & {
 
 export type AssignmentNodeData = BaseScriptNodeData
 export type ReturnNodeData = BaseScriptNodeData
-export type FunctionCallNodeData = BaseScriptNodeData
+export type PrintNodeData = BaseScriptNodeData
 export type OperatorNodeData = BaseScriptNodeData & {
   operatorSymbol: string
 }
@@ -31,7 +31,7 @@ export type NumberLiteralNodeData = BaseScriptNodeData & {
 export type LocalDeclarationFlowNode = Node<LocalDeclarationNodeData, 'localDecl'>
 export type AssignmentFlowNode = Node<AssignmentNodeData, 'assignment'>
 export type ReturnFlowNode = Node<ReturnNodeData, 'return'>
-export type FunctionCallFlowNode = Node<FunctionCallNodeData, 'functionCall'>
+export type PrintFlowNode = Node<PrintNodeData, 'print'>
 export type AddFlowNode = Node<OperatorNodeData, 'add'>
 export type SubtractFlowNode = Node<OperatorNodeData, 'subtract'>
 export type MultiplyFlowNode = Node<OperatorNodeData, 'multiply'>
@@ -44,7 +44,7 @@ export type ScriptFlowNode =
   | LocalDeclarationFlowNode
   | AssignmentFlowNode
   | ReturnFlowNode
-  | FunctionCallFlowNode
+  | PrintFlowNode
   | AddFlowNode
   | SubtractFlowNode
   | MultiplyFlowNode

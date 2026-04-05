@@ -14,7 +14,7 @@ export const starterNodeTemplates: StarterNodeTemplate[] = [
   { type: 'localDecl', label: 'LocalDeclaration', role: 'Statement', detail: 'local name = value' },
   { type: 'assignment', label: 'Assignment', role: 'Statement', detail: 'result = value' },
   { type: 'return', label: 'Return', role: 'Statement', detail: 'return result' },
-  { type: 'functionCall', label: 'FunctionCall', role: 'AstNode', detail: 'print(result)' },
+  { type: 'print', label: 'Print', role: 'Statement', detail: 'print(value)' },
   { type: 'add', label: 'Add', role: 'Expression', detail: 'left + right' },
   { type: 'subtract', label: 'Subtract', role: 'Expression', detail: 'left - right' },
   { type: 'multiply', label: 'Multiply', role: 'Expression', detail: 'left * right' },
