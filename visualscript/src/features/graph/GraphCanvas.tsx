@@ -34,8 +34,25 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const flowRef = useRef<ReactFlowInstance<ScriptFlowNode> | null>(null)
 
+  const isExecHandle = useCallback((handleId: string | null | undefined) => handleId?.startsWith('exec-') ?? false, [])
+
+  const isConnectionAllowed = useCallback(
+    (connection: Connection | Edge) => {
+      if (!connection.sourceHandle || !connection.targetHandle) {
+        return false
+      }
+
+      return isExecHandle(connection.sourceHandle) === isExecHandle(connection.targetHandle)
+    },
+    [isExecHandle],
+  )
+
   const onConnect = useCallback(
     (connection: Connection) => {
+      if (!isConnectionAllowed(connection)) {
+        return
+      }
+
       const isExecutionEdge =
         connection.sourceHandle?.startsWith('exec-') && connection.targetHandle?.startsWith('exec-')
 
@@ -61,7 +78,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
 
       setEdges((current) => addEdge({ ...connection, animated: true }, current))
     },
-    [setEdges],
+    [isConnectionAllowed, setEdges],
   )
 
   useImperativeHandle(
@@ -95,6 +112,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
+      isValidConnection={isConnectionAllowed}
       nodeTypes={scriptNodeTypes}
       connectionMode={ConnectionMode.Loose}
       nodesConnectable

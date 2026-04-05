@@ -81,6 +81,10 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- LocalDeclaration and Print include `exec-in` and `exec-out` handles
 	- execution handles use distinct styling from data handles
 	- execution edges (exec -> exec) use a distinct dashed green style and marker
+	- connection validation now enforces handle compatibility:
+		- `exec-*` can connect only to `exec-*`
+		- data handles can connect only to data handles
+		- mixed execution/data links are blocked in the editor
 - UI node metadata simplification:
 	- no Statement/Expression/AstNode role text shown in node cards
 	- operator nodes no longer show an extra operator-symbol row
@@ -171,6 +175,10 @@ Forbidden connection examples (to be validated in UI):
 - `exec-in` -> `exec-in`
 - `exec-out` -> `exec-out`
 - multiple incoming execution edges to one `exec-in` (unless branching is introduced later)
+
+Current enforcement status:
+- Implemented in graph editor connection validation (`isValidConnection`) and connect-time guard (`onConnect`).
+- Invalid mixed links are rejected both during drag-preview and when attempting to create the edge.
 
 Ordering semantics for code generation:
 - Follow execution chain from entry statement(s) using execution edges.
