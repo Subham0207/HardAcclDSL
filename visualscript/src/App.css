@@ -90,7 +90,6 @@
 }
 
 .script-node {
-  position: relative;
   min-width: 160px;
   border: 1px solid #bed0eb;
   border-radius: 10px;
@@ -99,11 +98,55 @@
   box-shadow: 0 4px 10px rgba(26, 56, 91, 0.12);
 }
 
+.script-node-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+
 .script-node-content {
-  padding: 0 44px;
+  min-width: 120px;
+  flex: 1;
+}
+
+.script-node-rail {
+  width: 58px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.script-node-rail-left {
+  align-items: flex-start;
+  padding-right: 4px;
+}
+
+.script-node-rail-right {
+  align-items: flex-end;
+  padding-left: 4px;
+}
+
+.script-port {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.script-port-in {
+  flex-direction: row;
+}
+
+.script-port-out {
+  flex-direction: row-reverse;
 }
 
 .script-handle {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -111,21 +154,9 @@
   background: #1f5ea0;
   cursor: crosshair;
   pointer-events: all;
-  z-index: 3;
-}
-
-.script-handle-in {
-  left: -7px;
-}
-
-.script-handle-out {
-  right: -7px;
 }
 
 .script-handle-label {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
   min-width: 34px;
   font-size: 0.68rem;
   font-weight: 700;
@@ -136,17 +167,6 @@
   border-radius: 999px;
   padding: 2px 6px;
   pointer-events: none;
-  z-index: 2;
-}
-
-.script-handle-label-in {
-  left: 6px;
-  text-align: right;
-}
-
-.script-handle-label-out {
-  right: 6px;
-  text-align: left;
 }
 
 .script-node-label {
@@ -167,6 +187,47 @@
   margin-top: 6px;
   font-size: 0.8rem;
   color: #315577;
+}
+
+.script-node-fields {
+  margin-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.script-node-field {
+  display: grid;
+  gap: 4px;
+}
+
+.script-node-field > span {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #3b648c;
+}
+
+.script-node-input {
+  width: 100%;
+  font-size: 0.78rem;
+  border: 1px solid #c4d7ef;
+  border-radius: 7px;
+  padding: 5px 7px;
+  color: #1b446d;
+  background: #ffffff;
+}
+
+.script-node-input:focus-visible {
+  outline: 2px solid #2c78c6;
+  outline-offset: 1px;
+}
+
+.script-node-operator {
+  margin-top: 8px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #154a7a;
 }
 
 .react-flow__node.selected .script-node {

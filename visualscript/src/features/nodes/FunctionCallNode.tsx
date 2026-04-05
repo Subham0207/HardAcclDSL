@@ -4,31 +4,28 @@ import type { FunctionCallFlowNode } from './types'
 
 export function FunctionCallNode({ data }: NodeProps<FunctionCallFlowNode>) {
   return (
-    <NodeFrame label={data.label} role={data.role} detail={data.detail}>
-      <Handle
-        id="arg0"
-        type="target"
-        position={Position.Left}
-        className="script-handle script-handle-in"
-        style={{ top: '35%' }}
-        isConnectable
-      />
-      <span className="script-handle-label script-handle-label-in" style={{ top: '35%' }}>
-        arg0
-      </span>
-      <Handle
-        id="arg1"
-        type="target"
-        position={Position.Left}
-        className="script-handle script-handle-in"
-        style={{ top: '70%' }}
-        isConnectable
-      />
-      <span className="script-handle-label script-handle-label-in" style={{ top: '70%' }}>
-        arg1
-      </span>
-      <Handle id="out" type="source" position={Position.Right} className="script-handle script-handle-out" isConnectable />
-      <span className="script-handle-label script-handle-label-out">out</span>
-    </NodeFrame>
+    <NodeFrame
+      label={data.label}
+      role={data.role}
+      detail={data.detail}
+      leftRail={
+        <>
+          <div className="script-port script-port-in">
+            <Handle id="arg0" type="target" position={Position.Left} className="script-handle" isConnectable />
+            <span className="script-handle-label">arg0</span>
+          </div>
+          <div className="script-port script-port-in">
+            <Handle id="arg1" type="target" position={Position.Left} className="script-handle" isConnectable />
+            <span className="script-handle-label">arg1</span>
+          </div>
+        </>
+      }
+      rightRail={
+        <div className="script-port script-port-out">
+          <Handle id="out" type="source" position={Position.Right} className="script-handle" isConnectable />
+          <span className="script-handle-label">out</span>
+        </div>
+      }
+    />
   )
 }
