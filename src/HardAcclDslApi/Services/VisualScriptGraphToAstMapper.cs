@@ -16,7 +16,7 @@ public sealed class VisualScriptGraphToAstMapper
 
         foreach (var node in orderedStatementNodes)
         {
-            var mapped = MapStatementNode(node, vsGraphIndex, diagnostics);
+            var mapped = MapToStatementNode(node, vsGraphIndex, diagnostics);
             if (mapped is not null)
             {
                 statements.Add(mapped);
@@ -96,22 +96,22 @@ public sealed class VisualScriptGraphToAstMapper
         return node.Type is "localDecl" or "assignment" or "return" or "print";
     }
 
-    private static AstNode? MapStatementNode(
+    private static AstNode? MapToStatementNode(
         VisualScriptGraphNodeDto node,
         VisualScriptGraphIndex vsGraphIndex,
         List<VisualScriptGraphDiagnostic> diagnostics)
     {
         return node.Type switch
         {
-            "localDecl" => MapLocalDeclaration(node, vsGraphIndex, diagnostics),
-            "assignment" => MapAssignment(node, vsGraphIndex, diagnostics),
-            "return" => MapReturn(node, vsGraphIndex, diagnostics),
-            "print" => MapPrint(node, vsGraphIndex, diagnostics),
+            "localDecl" => MapToLocalDeclaration(node, vsGraphIndex, diagnostics),
+            "assignment" => MapToAssignment(node, vsGraphIndex, diagnostics),
+            "return" => MapToReturn(node, vsGraphIndex, diagnostics),
+            "print" => MapToPrint(node, vsGraphIndex, diagnostics),
             _ => null,
         };
     }
 
-    private static AstNode MapLocalDeclaration(
+    private static AstNode MapToLocalDeclaration(
         VisualScriptGraphNodeDto node,
         VisualScriptGraphIndex vsGraphIndex,
         List<VisualScriptGraphDiagnostic> diagnostics)
@@ -120,7 +120,7 @@ public sealed class VisualScriptGraphToAstMapper
         var valueNode = vsGraphIndex.GetNodeConnectedToInputPin(new VisualScriptGraphPinRef(node.Id, "value"));
 
         var value = valueNode is not null
-            ? MapExpressionNode(valueNode, vsGraphIndex, diagnostics, new HashSet<string>(StringComparer.Ordinal))
+            ? MapToExpressionNode(valueNode, vsGraphIndex, diagnostics, new HashSet<string>(StringComparer.Ordinal))
             : new NumberLiteralExpressionNode
             {
                 NodeId = $"{node.Id}-initial",
@@ -135,7 +135,7 @@ public sealed class VisualScriptGraphToAstMapper
         };
     }
 
-    private static AstNode MapAssignment(
+    private static AstNode MapToAssignment(
         VisualScriptGraphNodeDto node,
         VisualScriptGraphIndex vsGraphIndex,
         List<VisualScriptGraphDiagnostic> diagnostics)
@@ -159,7 +159,7 @@ public sealed class VisualScriptGraphToAstMapper
         }
 
         var value = valueNode is not null
-            ? MapExpressionNode(valueNode, vsGraphIndex, diagnostics, new HashSet<string>(StringComparer.Ordinal))
+            ? MapToExpressionNode(valueNode, vsGraphIndex, diagnostics, new HashSet<string>(StringComparer.Ordinal))
             : new IdentifierExpressionNode
             {
                 NodeId = $"{node.Id}-value-missing",
@@ -174,14 +174,14 @@ public sealed class VisualScriptGraphToAstMapper
         };
     }
 
-    private static AstNode MapReturn(
+    private static AstNode MapToReturn(
         VisualScriptGraphNodeDto node,
         VisualScriptGraphIndex vsGraphIndex,
         List<VisualScriptGraphDiagnostic> diagnostics)
     {
         var valueNode = vsGraphIndex.GetNodeConnectedToInputPin(new VisualScriptGraphPinRef(node.Id, "value"));
         var value = valueNode is not null
-            ? MapExpressionNode(valueNode, vsGraphIndex, diagnostics, new HashSet<string>(StringComparer.Ordinal))
+            ? MapToExpressionNode(valueNode, vsGraphIndex, diagnostics, new HashSet<string>(StringComparer.Ordinal))
             : new IdentifierExpressionNode
             {
                 NodeId = $"{node.Id}-value-missing",
@@ -195,14 +195,14 @@ public sealed class VisualScriptGraphToAstMapper
         };
     }
 
-    private static AstNode MapPrint(
+    private static AstNode MapToPrint(
         VisualScriptGraphNodeDto node,
         VisualScriptGraphIndex vsGraphIndex,
         List<VisualScriptGraphDiagnostic> diagnostics)
     {
         var valueNode = vsGraphIndex.GetNodeConnectedToInputPin(new VisualScriptGraphPinRef(node.Id, "value"));
         var arg = valueNode is not null
-            ? MapExpressionNode(valueNode, vsGraphIndex, diagnostics, new HashSet<string>(StringComparer.Ordinal))
+            ? MapToExpressionNode(valueNode, vsGraphIndex, diagnostics, new HashSet<string>(StringComparer.Ordinal))
             : new IdentifierExpressionNode
             {
                 NodeId = $"{node.Id}-value-missing",
@@ -217,7 +217,7 @@ public sealed class VisualScriptGraphToAstMapper
         };
     }
 
-    private static AstNode MapExpressionNode(
+    private static AstNode MapToExpressionNode(
         VisualScriptGraphNodeDto node,
         VisualScriptGraphIndex vsGraphIndex,
         List<VisualScriptGraphDiagnostic> diagnostics,
@@ -258,12 +258,12 @@ public sealed class VisualScriptGraphToAstMapper
                 RawText = GetDataString(node.Data, "value") ?? "0",
             },
             "add" or "subtract" or "multiply" or "divide" or "modulo" =>
-                MapBinary(node, vsGraphIndex, diagnostics, visiting),
-            _ => UnsupportedExpression(node, diagnostics),
+                MapToBinaryExpression(node, vsGraphIndex, diagnostics, visiting),
+            _ => MapToUnsupportedExpression(node, diagnostics),
         };
     }
 
-    private static AstNode MapBinary(
+    private static AstNode MapToBinaryExpression(
         VisualScriptGraphNodeDto node,
         VisualScriptGraphIndex vsGraphIndex,
         List<VisualScriptGraphDiagnostic> diagnostics,
@@ -273,7 +273,7 @@ public sealed class VisualScriptGraphToAstMapper
         var rightNode = vsGraphIndex.GetNodeConnectedToInputPin(new VisualScriptGraphPinRef(node.Id, "right"));
 
         var left = leftNode is not null
-            ? MapExpressionNode(leftNode, vsGraphIndex, diagnostics, visiting)
+            ? MapToExpressionNode(leftNode, vsGraphIndex, diagnostics, visiting)
             : new IdentifierExpressionNode
             {
                 NodeId = $"{node.Id}-left-missing",
@@ -281,7 +281,7 @@ public sealed class VisualScriptGraphToAstMapper
             };
 
         var right = rightNode is not null
-            ? MapExpressionNode(rightNode, vsGraphIndex, diagnostics, visiting)
+            ? MapToExpressionNode(rightNode, vsGraphIndex, diagnostics, visiting)
             : new IdentifierExpressionNode
             {
                 NodeId = $"{node.Id}-right-missing",
@@ -297,7 +297,7 @@ public sealed class VisualScriptGraphToAstMapper
         };
     }
 
-    private static AstNode UnsupportedExpression(VisualScriptGraphNodeDto node, List<VisualScriptGraphDiagnostic> diagnostics)
+    private static AstNode MapToUnsupportedExpression(VisualScriptGraphNodeDto node, List<VisualScriptGraphDiagnostic> diagnostics)
     {
         diagnostics.Add(new VisualScriptGraphDiagnostic
         {
