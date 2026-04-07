@@ -101,6 +101,11 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Editable node fields now persist into graph state (instead of staying as initial default values).
 - New nodes now use UUID ids (`crypto.randomUUID`) in frontend graph creation.
 - Frontend now captures and sends graph snapshot JSON to backend mapping route (`/api/lua/graph-to-ast`).
+- Frontend now includes a dedicated Lua Console panel on the right side of the graph canvas.
+- Lua Console displays:
+	- generated Lua code
+	- printed execution output lines
+	- runtime execution errors
 - Frontend graph-to-AST conversion was intentionally removed; backend will own graph-to-AST mapping.
 - Backend now uses explicit `VisualScriptGraph...` naming for clarity:
 	- `VisualScriptGraphSnapshotDto`
@@ -122,6 +127,10 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Added `LuaExecutionService` using Lua.NET (Lua 5.4 bindings) for server-side execution of generated Lua.
 - Graph-to-AST flow is now end-to-end: VisualScript -> AST -> Lua -> Execute -> Response payload.
 - Lua `print(...)` output is captured inside the Lua runtime and returned to clients as `printedLines`.
+- Fixed false-positive expression cycle detection for shared expression DAG nodes:
+	- mapper now treats `visiting` as recursion stack (add/remove per traversal path)
+	- repeated references to the same source node no longer incorrectly emit `expression_cycle`
+	- real cycle fallback for `localDecl` / `identifier` now prefers variable name over generic `cycle`
 
 AST JSON contract (latest):
 - `kind` is the only node discriminator in API responses.
@@ -137,7 +146,11 @@ AST JSON contract (latest):
 	- ANTLR to AST mapping tests
 - VisualScript graph-to-AST mapper tests
 - Lua execution service tests (return values, runtime error, and print capture)
-- Current count: 24 passing tests.
+- Added route-level regression test for `/api/lua/graph-to-ast` with a shared-`result` expression graph.
+- Large route request/response payloads are now stored as fixtures in:
+	- `tests/HardAcclDslApi.UnitTests/TestData/graph-to-ast-request.json`
+	- `tests/HardAcclDslApi.UnitTests/TestData/graph-to-ast-response.json`
+- Current count: 25 passing tests.
 - AST mapping tests verify whole-tree structural equality while ignoring NodeId.
 
 ### 5) AST Model (Updated)
