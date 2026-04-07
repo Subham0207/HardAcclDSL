@@ -111,6 +111,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- execution ordering from `exec-out -> exec-in`
 	- diagnostics collection for cycles/unsupported nodes/invalid assignment target
 	- `localDecl` used as expression source maps to identifier by variable name
+- Added `AstToLuaScribanRenderer` for AST -> Lua generation using Scriban templates.
+- Lua generation now adds parentheses for nested arithmetic based on AST tree shape to preserve operation order.
 
 AST JSON contract (latest):
 - `kind` is the only node discriminator in API responses.
