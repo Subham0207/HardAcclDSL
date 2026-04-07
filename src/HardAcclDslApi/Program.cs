@@ -16,6 +16,7 @@ builder.Services.AddSingleton<AntlrLuaParserService>();
 builder.Services.AddSingleton<LuaToIR>();
 builder.Services.AddSingleton<VisualScriptGraphToAstMapper>();
 builder.Services.AddSingleton<AstToLuaScribanRenderer>();
+builder.Services.AddSingleton<LuaExecutionService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
