@@ -233,33 +233,47 @@ public sealed class VisualScriptGraphToAstMapper
                 NodeId = node.Id,
             });
 
-            return new IdentifierExpressionNode
-            {
-                NodeId = $"{node.Id}-cycle",
-                Name = "cycle",
-            };
+            return CreateCycleFallbackExpression(node);
         }
 
-        return node.Type switch
+        try
         {
-            "localDecl" => new IdentifierExpressionNode
+            return node.Type switch
             {
-                NodeId = node.Id,
-                Name = GetDataString(node.Data, "variableName") ?? "value",
-            },
-            "identifier" => new IdentifierExpressionNode
-            {
-                NodeId = node.Id,
-                Name = GetDataString(node.Data, "variableName") ?? "value",
-            },
-            "numberLiteral" => new NumberLiteralExpressionNode
-            {
-                NodeId = node.Id,
-                RawText = GetDataString(node.Data, "value") ?? "0",
-            },
-            "add" or "subtract" or "multiply" or "divide" or "modulo" =>
-                MapToBinaryExpression(node, vsGraphIndex, diagnostics, visiting),
-            _ => MapToUnsupportedExpression(node, diagnostics),
+                "localDecl" => new IdentifierExpressionNode
+                {
+                    NodeId = node.Id,
+                    Name = GetDataString(node.Data, "variableName") ?? "value",
+                },
+                "identifier" => new IdentifierExpressionNode
+                {
+                    NodeId = node.Id,
+                    Name = GetDataString(node.Data, "variableName") ?? "value",
+                },
+                "numberLiteral" => new NumberLiteralExpressionNode
+                {
+                    NodeId = node.Id,
+                    RawText = GetDataString(node.Data, "value") ?? "0",
+                },
+                "add" or "subtract" or "multiply" or "divide" or "modulo" =>
+                    MapToBinaryExpression(node, vsGraphIndex, diagnostics, visiting),
+                _ => MapToUnsupportedExpression(node, diagnostics),
+            };
+        }
+        finally
+        {
+            visiting.Remove(node.Id);
+        }
+    }
+
+    private static AstNode CreateCycleFallbackExpression(VisualScriptGraphNodeDto node)
+    {
+        return new IdentifierExpressionNode
+        {
+            NodeId = $"{node.Id}-cycle",
+            Name = node.Type is "localDecl" or "identifier"
+                ? GetDataString(node.Data, "variableName") ?? "value"
+                : "cycle",
         };
     }
 

@@ -1,0 +1,42 @@
+{
+  "ast": {
+    "kind": "Program",
+    "statements": [
+      {
+        "kind": "LocalDeclarationStatement",
+        "name": "result"
+      },
+      {
+        "kind": "FunctionCall",
+        "functionName": "print"
+      },
+      {
+        "kind": "FunctionCall",
+        "functionName": "print",
+        "arguments": [
+          {
+            "kind": "BinaryExpression",
+            "right": {
+              "kind": "BinaryExpression",
+              "left": {
+                "kind": "IdentifierExpression",
+                "name": "result"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostics": [],
+  "luaCode": "local result = 15\nprint(result)\nprint(result * (result + 13))",
+  "execution": {
+    "success": true,
+    "error": "",
+    "returnValues": [],
+    "printedLines": [
+      "15",
+      "420"
+    ]
+  }
+}
