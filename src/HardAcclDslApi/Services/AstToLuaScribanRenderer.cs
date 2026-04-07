@@ -52,9 +52,9 @@ public sealed class AstToLuaScribanRenderer
             }),
             BinaryExpressionNode binary => BinaryTemplate.Render(new
             {
-                left = RenderNode(binary.Left),
+                left = RenderOperand(binary.Left),
                 @operator = binary.Operator,
-                right = RenderNode(binary.Right),
+                right = RenderOperand(binary.Right),
             }),
             FunctionCallNode call => FunctionCallTemplate.Render(new
             {
@@ -64,6 +64,12 @@ public sealed class AstToLuaScribanRenderer
             ProgramNode program => RenderProgram(program),
             _ => throw new NotSupportedException($"Unsupported AST node type for Lua rendering: {node.GetType().Name}"),
         };
+    }
+
+    private string RenderOperand(AstNode operand)
+    {
+        var rendered = RenderNode(operand);
+        return operand is BinaryExpressionNode ? $"({rendered})" : rendered;
     }
 
     private static Template ParseTemplate(string templateText)
