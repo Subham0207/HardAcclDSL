@@ -13,7 +13,6 @@ on:
 permissions:
   id-token: write
   contents: read
-  actions: write # Needed to create/update HARDACCLDSL_API_URL repository Actions variable via GitHub API.
 
 env:
   AWS_REGION: us-east-1
@@ -68,51 +67,3 @@ jobs:
               HttpApiName="$HTTP_API_NAME" \
               AllowedOrigin="$ALLOWED_ORIGIN" \
             --region "$AWS_REGION"
-
-      - name: Export API URL to HARDACCLDSL_API_URL variable
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          API_URL=$(aws cloudformation describe-stacks \
-            --stack-name "$BACKEND_STACK_NAME" \
-            --region "$AWS_REGION" \
-            --query "Stacks[0].Outputs[?OutputKey=='HardAcclDSLApiUrl'].OutputValue | [0]" \
-            --output text)
-
-          if [ -z "$API_URL" ] || [ "$API_URL" = "None" ]; then
-            echo "Could not resolve HardAcclDSLApiUrl output from stack $BACKEND_STACK_NAME"
-            exit 1
-          fi
-
-          API_URL=${API_URL%/}
-          VAR_NAME="HARDACCLDSL_API_URL"
-          API_BASE="https://api.github.com/repos/${{ github.repository }}"
-
-          UPDATE_STATUS=$(curl -s -o /tmp/update_response.json -w "%{http_code}" \
-            -X PATCH \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "$API_BASE/actions/variables/$VAR_NAME" \
-            -d "{\"name\":\"$VAR_NAME\",\"value\":\"$API_URL\"}")
-
-          if [ "$UPDATE_STATUS" = "204" ]; then
-            echo "Updated $VAR_NAME to $API_URL"
-            exit 0
-          fi
-
-          CREATE_STATUS=$(curl -s -o /tmp/create_response.json -w "%{http_code}" \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "$API_BASE/actions/variables" \
-            -d "{\"name\":\"$VAR_NAME\",\"value\":\"$API_URL\"}")
-
-          if [ "$CREATE_STATUS" = "201" ]; then
-            echo "Created $VAR_NAME as $API_URL"
-            exit 0
-          fi
-
-          echo "Failed to set $VAR_NAME. PATCH status: $UPDATE_STATUS, POST status: $CREATE_STATUS"
-          cat /tmp/update_response.json || true
-          cat /tmp/create_response.json || true
-          exit 1
