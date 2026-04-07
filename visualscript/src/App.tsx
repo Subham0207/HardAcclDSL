@@ -16,6 +16,7 @@ type GraphToAstResponse = {
 }
 
 function App() {
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? ''
   const graphRef = useRef<GraphCanvasHandle | null>(null)
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const [graphPreview, setGraphPreview] = useState<string>('')
@@ -48,7 +49,8 @@ function App() {
               setGraphPreview(JSON.stringify(snapshot, null, 2))
 
               try {
-                const response = await fetch('/api/lua/graph-to-ast', {
+                const endpoint = apiBaseUrl ? `${apiBaseUrl}/api/lua/graph-to-ast` : '/api/lua/graph-to-ast'
+                const response = await fetch(endpoint, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
