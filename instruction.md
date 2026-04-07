@@ -161,6 +161,41 @@ AST JSON contract (latest):
 - `FunctionDeclarationNode` exists in the AST model as a planned node type (grammar/mapping for function declarations is not implemented yet).
 - Visual editor currently models function invocation as explicit `Print` node semantics rather than generic function-call semantics.
 
+### 6) Deployment and Infrastructure (Implemented)
+- Added backend deployment workflow: `.github/workflows/deploy-backend-lambda.yml`.
+	- Triggered on `master` pushes and manual dispatch.
+	- Builds and pushes Lambda container image to ECR.
+	- Deploys infrastructure/app via CloudFormation template.
+- Added frontend deployment workflow: `.github/workflows/deploy-frontend-pages.yml`.
+	- Triggered on `master` pushes and manual dispatch.
+	- Builds Vite app and deploys to GitHub Pages via GitHub Actions.
+	- Uses Node 24 in CI to satisfy current frontend dependency engine requirements.
+- Added Lambda container Dockerfile: `src/HardAcclDslApi/Dockerfile.lambda`.
+	- Uses AWS Lambda Web Adapter extension to run existing ASP.NET API on Lambda without controller rewrites.
+- Added infrastructure template: `infra/cloudformation.yml`.
+	- Creates IAM role for Lambda execution.
+	- Creates container-based Lambda function.
+	- Creates API Gateway HTTP API with Lambda proxy integration and routes (`ANY /`, `ANY /{proxy+}`).
+	- Configures API stage and invoke permission.
+	- Exposes output key `HardAcclDSLApiUrl`.
+
+Deployment conventions now in use:
+- Region fixed to `us-east-1` in backend workflow.
+- ECR repository name fixed to lowercase `hardaccldsl` (required by ECR naming constraints).
+- Backend CloudFormation names fixed:
+	- stack: `HardAcclDSL`
+	- lambda: `HardAcclDSLLambda`
+	- http api: `HardAcclDSLApi`
+- Frontend API base variable name standardized as `HARDACCLDSL_API_URL`.
+	- Frontend workflow injects this into build as `VITE_API_BASE_URL`.
+	- Frontend app uses `VITE_API_BASE_URL` when present and falls back to local `/api` proxy in dev.
+
+Operational notes:
+- Automatic GitHub variable write-back from backend workflow was removed after GitHub integration permission errors (`403 Resource not accessible by integration`).
+- Current model: set repository variable `HARDACCLDSL_API_URL` manually to the API Gateway URL.
+- Added ASP.NET Core CORS middleware in backend (`Program.cs`) and wired `CORS_ALLOWED_ORIGIN` through CloudFormation Lambda environment.
+	- This resolved deployed browser preflight failure (`OPTIONS 405`) for frontend -> API Gateway requests.
+
 ## Current Grammar Scope (Lua Subset)
 Supported now:
 - local assignment: local a = expression
