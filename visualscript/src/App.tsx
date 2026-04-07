@@ -3,12 +3,26 @@ import '@xyflow/react/dist/style.css'
 import './App.css'
 import { GraphCanvas, type GraphCanvasHandle } from './features/graph/GraphCanvas'
 import { starterNodeTemplates } from './features/graph/initialGraph'
+import { ExecutionConsole } from './features/console/ExecutionConsole'
+
+type GraphToAstResponse = {
+  luaCode: string
+  execution: {
+    success: boolean
+    error: string
+    returnValues: string[]
+    printedLines: string[]
+  }
+}
 
 function App() {
   const graphRef = useRef<GraphCanvasHandle | null>(null)
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const [graphPreview, setGraphPreview] = useState<string>('')
   const [sendStatus, setSendStatus] = useState<string>('')
+  const [printedLines, setPrintedLines] = useState<string[]>([])
+  const [executionError, setExecutionError] = useState<string>('')
+  const [luaCode, setLuaCode] = useState<string>('')
 
   return (
     <div className="app-shell">
@@ -44,13 +58,23 @@ function App() {
 
                 const responseText = await response.text()
                 if (!response.ok) {
+                  setPrintedLines([])
+                  setExecutionError('')
+                  setLuaCode('')
                   setSendStatus(`Send failed (${response.status}): ${responseText}`)
                   return
                 }
 
-                setSendStatus(`Sent to backend`)
+                const payload = JSON.parse(responseText) as GraphToAstResponse
+                setLuaCode(payload.luaCode ?? '')
+                setPrintedLines(payload.execution?.printedLines ?? [])
+                setExecutionError(payload.execution?.error ?? '')
+                setSendStatus('Sent to backend')
               } catch (error) {
                 const message = error instanceof Error ? error.message : 'Unknown error'
+                setPrintedLines([])
+                setExecutionError('')
+                setLuaCode('')
                 setSendStatus(`Send failed: ${message}`)
               }
             }}
@@ -75,6 +99,10 @@ function App() {
 
         <div className="flow-host" ref={viewportRef}>
           <GraphCanvas ref={graphRef} viewportRef={viewportRef} />
+        </div>
+
+        <div className="console-panel">
+          <ExecutionConsole printedLines={printedLines} error={executionError} luaCode={luaCode} />
         </div>
       </div>
     </div>
