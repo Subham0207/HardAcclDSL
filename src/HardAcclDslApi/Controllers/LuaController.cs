@@ -13,15 +13,18 @@ public class LuaController : ControllerBase
     private readonly LuaToIR _luaToIr;
     private readonly AntlrLuaParserService _parserService;
     private readonly VisualScriptGraphToAstMapper _graphToAstMapper;
+    private readonly AstToLuaScribanRenderer _astToLuaRenderer;
 
     public LuaController(
         LuaToIR luaToIr,
         AntlrLuaParserService parserService,
-        VisualScriptGraphToAstMapper graphToAstMapper)
+        VisualScriptGraphToAstMapper graphToAstMapper,
+        AstToLuaScribanRenderer astToLuaRenderer)
     {
         _luaToIr = luaToIr;
         _parserService = parserService;
         _graphToAstMapper = graphToAstMapper;
+        _astToLuaRenderer = astToLuaRenderer;
     }
 
     [HttpPost("convert")]
@@ -131,6 +134,7 @@ public class LuaController : ControllerBase
         {
             Ast = result.Ast,
             Diagnostics = result.Diagnostics,
+            LuaCode = _astToLuaRenderer.RenderProgram(result.Ast),
         });
     }
 }
@@ -172,4 +176,5 @@ public sealed class VisualScriptGraphToAstResponse
     public ProgramNode Ast { get; init; } = new();
     public IReadOnlyList<VisualScriptGraphDiagnostic> Diagnostics { get; init; } =
         Array.Empty<VisualScriptGraphDiagnostic>();
+    public string LuaCode { get; init; } = string.Empty;
 }
