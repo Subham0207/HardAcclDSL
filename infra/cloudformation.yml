@@ -102,3 +102,8 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendHttpApi}/*/*
 
+Outputs:
+  HardAcclDSLApiUrl:
+    Description: Public URL for the HTTP API.
+    Value: !GetAtt BackendHttpApi.ApiEndpoint
+
