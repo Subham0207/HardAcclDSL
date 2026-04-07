@@ -48,7 +48,7 @@ function App() {
                   return
                 }
 
-                setSendStatus(`Sent to backend: ${responseText}`)
+                setSendStatus(`Sent to backend`)
               } catch (error) {
                 const message = error instanceof Error ? error.message : 'Unknown error'
                 setSendStatus(`Send failed: ${message}`)
