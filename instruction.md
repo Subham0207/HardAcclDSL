@@ -42,6 +42,12 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Receives typed VisualScript graph snapshot JSON and returns an acknowledgement (node/edge counts).
 - POST /api/lua/graph-to-ast
 	- Receives typed VisualScript graph snapshot JSON and returns mapped AST + diagnostics.
+	- Also returns generated Lua code and Lua execution result.
+	- Execution result now includes:
+		- `success`
+		- `error`
+		- `returnValues`
+		- `printedLines` (captured `print(...)` output)
 
 ### 3.1) Visual Script UI (React Flow Prototype)
 - Installed React Flow library (`@xyflow/react`) in `visualscript/`.
@@ -113,6 +119,9 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- `localDecl` used as expression source maps to identifier by variable name
 - Added `AstToLuaScribanRenderer` for AST -> Lua generation using Scriban templates.
 - Lua generation now adds parentheses for nested arithmetic based on AST tree shape to preserve operation order.
+- Added `LuaExecutionService` using Lua.NET (Lua 5.4 bindings) for server-side execution of generated Lua.
+- Graph-to-AST flow is now end-to-end: VisualScript -> AST -> Lua -> Execute -> Response payload.
+- Lua `print(...)` output is captured inside the Lua runtime and returned to clients as `printedLines`.
 
 AST JSON contract (latest):
 - `kind` is the only node discriminator in API responses.
@@ -127,7 +136,8 @@ AST JSON contract (latest):
 	- ANTLR parser result tests (Lua -> parser output)
 	- ANTLR to AST mapping tests
 - VisualScript graph-to-AST mapper tests
-- Current count: 19 passing tests.
+- Lua execution service tests (return values, runtime error, and print capture)
+- Current count: 24 passing tests.
 - AST mapping tests verify whole-tree structural equality while ignoring NodeId.
 
 ### 5) AST Model (Updated)
@@ -177,7 +187,7 @@ Decision:
 7. Add function declaration grammar + AST mapping (`FunctionDeclarationNode`).
 8. Decide NodeId lifecycle strategy for visual editor persistence and patch operations.
 9. Connect snapshot->AST pipeline with existing `/api/lua/convert` and generation flows.
-10. Implement graph-to-Lua generation using templates (node-driven rendering, starting with execution nodes like LocalDeclaration and Print).
+10. Extend execution diagnostics (for example source node mapping for runtime errors and safer sandbox restrictions).
 
 ## Execution Flow Rules (UI Graph)
 Current intent for execution-enabled nodes (first pass):
