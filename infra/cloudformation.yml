@@ -41,6 +41,9 @@ Resources:
       Code:
         ImageUri: !Ref LambdaImageUri
       Role: !GetAtt BackendLambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          CORS_ALLOWED_ORIGIN: !Ref AllowedOrigin
       Timeout: 30
       MemorySize: 1024
       Architectures:

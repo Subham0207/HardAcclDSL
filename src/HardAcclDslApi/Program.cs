@@ -17,6 +17,20 @@ builder.Services.AddSingleton<LuaToIR>();
 builder.Services.AddSingleton<VisualScriptGraphToAstMapper>();
 builder.Services.AddSingleton<AstToLuaScribanRenderer>();
 builder.Services.AddSingleton<LuaExecutionService>();
+var corsAllowedOrigin = builder.Configuration["CORS_ALLOWED_ORIGIN"] ?? "*";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("frontend", policy =>
+    {
+        if (corsAllowedOrigin == "*")
+        {
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            return;
+        }
+
+        policy.WithOrigins(corsAllowedOrigin).AllowAnyHeader().AllowAnyMethod();
+    });
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -31,6 +45,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("frontend");
 
 app.UseAuthorization();
 
