@@ -112,14 +112,41 @@ public class LuaController : ControllerBase
     }
 
     [HttpPost("lua-to-visualscript")]
-    public ActionResult<LuaToVisualScriptResponse> LuaToVisualScript([FromBody] LuaConvertRequest request)
+    public async Task<ActionResult<LuaToVisualScriptResponse>> LuaToVisualScript([FromBody] LuaToVisualScriptRequest request, CancellationToken cancellationToken)
     {
-        if (request is null || string.IsNullOrWhiteSpace(request.LuaCode))
+        if (request is null)
         {
-            return BadRequest("luaCode is required.");
+            return BadRequest("Request body is required.");
         }
 
-        var parseResult = _parserService.Parse(request.LuaCode);
+        var hasUser = !string.IsNullOrWhiteSpace(request.User);
+        var hasScriptName = !string.IsNullOrWhiteSpace(request.ScriptName);
+        if (hasUser ^ hasScriptName)
+        {
+            return BadRequest("user and scriptName must be provided together.");
+        }
+
+        var luaCode = request.LuaCode;
+        if (hasUser && hasScriptName)
+        {
+            var stored = await _scriptStorageService.GetScriptAsync(request.User.Trim(), request.ScriptName.Trim(), cancellationToken);
+            if (stored is null)
+            {
+                return NotFound(new
+                {
+                    error = $"Script '{request.ScriptName}' not found for user '{request.User}'."
+                });
+            }
+
+            luaCode = stored.LuaCode;
+        }
+
+        if (string.IsNullOrWhiteSpace(luaCode))
+        {
+            return BadRequest("luaCode is required when user and scriptName are not provided.");
+        }
+
+        var parseResult = _parserService.Parse(luaCode);
         if (!parseResult.IsValid)
         {
             var firstError = parseResult.Errors[0];
@@ -263,6 +290,13 @@ public sealed class GraphToAstRequest
     public string User { get; init; } = string.Empty;
     public string ScriptName { get; init; } = string.Empty;
     public VisualScriptGraphSnapshotDto GraphSnapshot { get; init; } = new();
+}
+
+public sealed class LuaToVisualScriptRequest
+{
+    public string LuaCode { get; init; } = string.Empty;
+    public string User { get; init; } = string.Empty;
+    public string ScriptName { get; init; } = string.Empty;
 }
 
 public sealed class LuaToVisualScriptResponse

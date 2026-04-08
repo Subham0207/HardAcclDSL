@@ -20,6 +20,12 @@ type LuaToVisualScriptResponse = {
   graphSnapshot: GraphSnapshot
 }
 
+type LuaToVisualScriptRequest = {
+  luaCode?: string
+  user?: string
+  scriptName?: string
+}
+
 type GraphToAstRequest = {
   user: string
   scriptName: string
@@ -45,6 +51,39 @@ function App() {
   const [userName, setUserName] = useState<string>('')
   const [scriptName, setScriptName] = useState<string>('')
   const [savedScripts, setSavedScripts] = useState<string[]>([])
+
+  const loadGraphFromSavedScript = async (user: string, selectedScriptName: string) => {
+    const trimmedUser = user.trim()
+    const trimmedScriptName = selectedScriptName.trim()
+    if (!trimmedUser || !trimmedScriptName) {
+      return
+    }
+
+    const endpoint = apiBaseUrl ? `${apiBaseUrl}/api/lua/lua-to-visualscript` : '/api/lua/lua-to-visualscript'
+    const requestPayload: LuaToVisualScriptRequest = {
+      user: trimmedUser,
+      scriptName: trimmedScriptName,
+    }
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestPayload),
+    })
+
+    const responseText = await response.text()
+    if (!response.ok) {
+      throw new Error(`Load script failed (${response.status}): ${responseText}`)
+    }
+
+    const payload = JSON.parse(responseText) as LuaToVisualScriptResponse
+    if (payload.graphSnapshot) {
+      graphRef.current?.loadGraphSnapshot(payload.graphSnapshot)
+      setSendStatus(`Loaded script '${trimmedScriptName}'.`)
+    }
+  }
 
   useEffect(() => {
     const loadSavedScripts = async (user: string) => {
@@ -188,7 +227,21 @@ function App() {
               <select
                 className="legend-input"
                 value={scriptName}
-                onChange={(event) => setScriptName(event.target.value)}
+                onChange={async (event) => {
+                  const selected = event.target.value
+                  setScriptName(selected)
+
+                  if (!selected) {
+                    return
+                  }
+
+                  try {
+                    await loadGraphFromSavedScript(userName, selected)
+                  } catch (error) {
+                    const message = error instanceof Error ? error.message : 'Unknown error'
+                    setSendStatus(message)
+                  }
+                }}
               >
                 <option value="">Select saved script</option>
                 {savedScripts.map((savedScript) => (

@@ -7,7 +7,7 @@ namespace HardAcclDslApi.UnitTests;
 public class LuaControllerLuaToVisualScriptTests
 {
     [Fact]
-    public void LuaToVisualScript_WithValidLua_ReturnsGraphSnapshot()
+    public async Task LuaToVisualScript_WithValidLua_ReturnsGraphSnapshot()
     {
         var parserService = new AntlrLuaParserService();
         var controller = new LuaController(
@@ -19,10 +19,10 @@ public class LuaControllerLuaToVisualScriptTests
             new LuaExecutionService(),
             TestLuaScriptStorageFactory.Create());
 
-        var result = controller.LuaToVisualScript(new LuaConvertRequest
+        var result = await controller.LuaToVisualScript(new LuaToVisualScriptRequest
         {
             LuaCode = "local result = 14\nprint(result)"
-        });
+        }, CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var response = Assert.IsType<LuaToVisualScriptResponse>(ok.Value);
