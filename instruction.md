@@ -41,7 +41,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - POST /api/lua/graph-snapshot
 	- Receives typed VisualScript graph snapshot JSON and returns an acknowledgement (node/edge counts).
 - POST /api/lua/graph-to-ast
-	- Receives typed VisualScript graph snapshot JSON and returns mapped AST + diagnostics.
+	- Receives request body with required fields: `user`, `scriptName`, `graphSnapshot`.
+	- Maps graph snapshot to AST, renders Lua, executes Lua, and saves generated Lua script before returning.
 	- Also returns generated Lua code and Lua execution result.
 	- Execution result now includes:
 		- `success`
@@ -57,7 +58,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 		- request body: `user`, `scriptName`, `luaCode`
 		- stores Lua code in S3 as `uuid.lua`
 		- stores DynamoDB metadata row with keys `user` (PK), `scriptname` (SK), and `s3Link`
-		- rejects duplicate `(user, scriptName)` with conflict response
+		- duplicate `(user, scriptName)` now updates existing script (upsert behavior)
+		- existing script update reuses the same S3 object key and overwrites content (no new S3 file)
 		- response returns only `user` and `scriptName` (`s3Link` is internal)
 	- `GET /api/lua-scripts/{user}/{scriptName}`
 		- reads metadata from DynamoDB and Lua content from S3
@@ -119,7 +121,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- operator nodes no longer show an extra operator-symbol row
 - Editable node fields now persist into graph state (instead of staying as initial default values).
 - New nodes now use UUID ids (`crypto.randomUUID`) in frontend graph creation.
-- Frontend now captures and sends graph snapshot JSON to backend mapping route (`/api/lua/graph-to-ast`).
+- Frontend now captures and sends graph snapshot JSON plus required `user` and `scriptName` to backend mapping route (`/api/lua/graph-to-ast`).
+- Frontend validates `user` and `scriptName` before sending graph snapshots.
 - Frontend now includes a dedicated Lua Console panel on the right side of the graph canvas.
 - Lua Console displays:
 	- generated Lua code
@@ -141,7 +144,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Emits both execution flow edges and data flow edges.
 - Added storage service: `LuaScriptStorageService` implementing `ILuaScriptStorageService`.
 	- Uses AWS SDK S3 + DynamoDB clients.
-	- Uses conditional writes in DynamoDB to enforce unique `(user, scriptname)`.
+	- Uses upsert save semantics keyed by `(user, scriptname)`.
+	- Existing rows keep their original `s3Link`; only object content is overwritten on save.
 	- Stores only `s3Link` in DynamoDB (no Lua content duplication).
 	- `s3Link` is internal-only and is not exposed by read/list/save API response contracts.
 - Current mapper coverage:

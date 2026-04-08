@@ -92,7 +92,9 @@ function App() {
                 const trimmedUser = userName.trim()
                 const trimmedScriptName = scriptName.trim()
                 if (!trimmedUser || !trimmedScriptName) {
-                  setSendStatus('Username and script name are required before sending.')
+                  const message = 'Username and script name are required before sending.'
+                  setSendStatus(message)
+                  window.alert(message)
                   return
                 }
 
