@@ -50,7 +50,11 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 		- `returnValues`
 		- `printedLines` (captured `print(...)` output)
 - POST /api/lua/lua-to-visualscript
-	- Receives Lua code and returns parsed AST plus mapped VisualScript graph snapshot.
+	- Supports two request modes:
+		- `luaCode` mode: receives Lua code and returns parsed AST plus mapped VisualScript graph snapshot.
+		- storage lookup mode: receives `user` + `scriptName`, loads Lua from storage, then returns parsed AST plus mapped VisualScript graph snapshot.
+	- If `user` and `scriptName` are provided, both are required together.
+	- Returns `404` when script is not found for the provided user.
 - GET /api/lua/lua-to-visualscript/default
 	- Uses hardcoded bootstrap Lua (`local result = 10`) and returns mapped AST + graph snapshot for first-load UI hydration.
 - Added new Lua script storage controller: `LuaScriptStorageController` under `api/lua-scripts`.
@@ -124,7 +128,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Frontend now captures and sends graph snapshot JSON plus required `user` and `scriptName` to backend mapping route (`/api/lua/graph-to-ast`).
 - Frontend validates `user` and `scriptName` before sending graph snapshots.
 - Frontend now asks for username at startup and loads that user's scripts from `GET /api/lua-scripts/{user}`.
-- Frontend now shows saved scripts in a dropdown and allows selecting one to populate `scriptName`.
+- Frontend now shows saved scripts in a dropdown and, when selected, calls `POST /api/lua/lua-to-visualscript` with `user` + `scriptName` to load and render that script graph.
 - Frontend now includes a dedicated Lua Console panel on the right side of the graph canvas.
 - Lua Console displays:
 	- generated Lua code
