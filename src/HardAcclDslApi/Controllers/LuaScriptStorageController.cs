@@ -44,7 +44,6 @@ public sealed class LuaScriptStorageController : ControllerBase
         {
             User = result.User,
             ScriptName = result.ScriptName,
-            S3Link = result.S3Link,
         });
     }
 
@@ -121,7 +120,6 @@ public sealed class SaveLuaScriptResponse
 {
     public string User { get; init; } = string.Empty;
     public string ScriptName { get; init; } = string.Empty;
-    public string S3Link { get; init; } = string.Empty;
 }
 
 public sealed class GetLuaScriptResponse
