@@ -14,10 +14,21 @@ public sealed class AstToLuaScribanRenderer
     private static readonly Template BinaryTemplate = ParseTemplate("{{ left }} {{ operator }} {{ right }}");
     private static readonly Template FunctionCallTemplate = ParseTemplate("{{ function_name }}({{ arguments }})");
 
-    public string RenderProgram(ProgramNode program)
+    public string RenderProgram(ProgramNode program, bool includeGraphPositionComments = false)
     {
         var lines = program.Statements.Select(RenderNode).ToList();
-        return string.Join("\n", lines);
+        if (!includeGraphPositionComments)
+        {
+            return string.Join("\n", lines);
+        }
+
+        var commentLines = LuaGraphPositionCommentCodec.BuildCommentLines(program);
+        if (commentLines.Count == 0)
+        {
+            return string.Join("\n", lines);
+        }
+
+        return string.Join("\n", commentLines.Concat(lines));
     }
 
     private string RenderNode(AstNode node)

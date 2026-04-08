@@ -15,6 +15,18 @@ public sealed class AstNodeJsonConverter : JsonConverter<AstNode>
         writer.WriteStartObject();
         writer.WriteString("nodeId", value.NodeId);
         writer.WriteString("kind", value.Kind.ToString());
+        if (!string.IsNullOrWhiteSpace(value.GraphNodeType))
+        {
+            writer.WriteString("graphNodeType", value.GraphNodeType);
+        }
+        if (value.GraphX.HasValue)
+        {
+            writer.WriteNumber("graphX", value.GraphX.Value);
+        }
+        if (value.GraphY.HasValue)
+        {
+            writer.WriteNumber("graphY", value.GraphY.Value);
+        }
 
         switch (value)
         {

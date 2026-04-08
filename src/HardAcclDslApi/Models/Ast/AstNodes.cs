@@ -17,7 +17,10 @@ public enum AstNodeKind
 public abstract class AstNode
 {
     // Stable node id that UI clients can use for selection, updates, and patch operations.
-    public string NodeId { get; init; } = Guid.NewGuid().ToString("N");
+    public string NodeId { get; set; } = Guid.NewGuid().ToString("N");
+    public string GraphNodeType { get; set; } = string.Empty;
+    public double? GraphX { get; set; }
+    public double? GraphY { get; set; }
     public abstract AstNodeKind Kind { get; }
 }
 

@@ -78,7 +78,7 @@ public sealed class AstToVisualScriptGraphMapper
                 AddNode(
                     nodeId,
                     "localDecl",
-                    NextStatementPosition(),
+                    PositionForNode(localDecl, NextStatementPosition),
                     new { label = "LocalDeclaration", role = "Statement", detail = "local name = value", variableName = localDecl.Name, initialValue },
                     Handles(dataIn: new[] { "value" }, dataOut: new[] { "out" }, execIn: new[] { "exec-in" }, execOut: new[] { "exec-out" }));
 
@@ -99,7 +99,7 @@ public sealed class AstToVisualScriptGraphMapper
                 AddNode(
                     nodeId,
                     "assignment",
-                    NextStatementPosition(),
+                    PositionForNode(assignment, NextStatementPosition),
                     new { label = "Assignment", role = "Statement", detail = "result = value" },
                     Handles(dataIn: new[] { "target", "value" }, dataOut: Array.Empty<string>(), execIn: Array.Empty<string>(), execOut: Array.Empty<string>()));
 
@@ -126,7 +126,7 @@ public sealed class AstToVisualScriptGraphMapper
                 AddNode(
                     nodeId,
                     "return",
-                    NextStatementPosition(),
+                    PositionForNode(ret, NextStatementPosition),
                     new { label = "Return", role = "Statement", detail = "return result" },
                     Handles(dataIn: new[] { "value" }, dataOut: Array.Empty<string>(), execIn: Array.Empty<string>(), execOut: Array.Empty<string>()));
 
@@ -144,7 +144,7 @@ public sealed class AstToVisualScriptGraphMapper
                 AddNode(
                     nodeId,
                     "print",
-                    NextStatementPosition(),
+                    PositionForNode(call, NextStatementPosition),
                     new { label = "Print", role = "Statement", detail = "print(value)" },
                     Handles(dataIn: new[] { "value" }, dataOut: Array.Empty<string>(), execIn: new[] { "exec-in" }, execOut: new[] { "exec-out" }));
 
@@ -183,7 +183,7 @@ public sealed class AstToVisualScriptGraphMapper
                 AddNode(
                     nodeId,
                     "identifier",
-                    NextExpressionPosition(),
+                    PositionForNode(identifier, NextExpressionPosition),
                     new { label = "Identifier", role = "Expression", detail = "read variable", variableName = identifier.Name },
                     Handles(dataIn: Array.Empty<string>(), dataOut: new[] { "out" }, execIn: Array.Empty<string>(), execOut: Array.Empty<string>()));
                 return nodeId;
@@ -192,7 +192,7 @@ public sealed class AstToVisualScriptGraphMapper
                 AddNode(
                     nodeId,
                     "numberLiteral",
-                    NextExpressionPosition(),
+                    PositionForNode(number, NextExpressionPosition),
                     new { label = "NumberLiteral", role = "Expression", detail = "numeric constant", value = number.RawText },
                     Handles(dataIn: Array.Empty<string>(), dataOut: new[] { "out" }, execIn: Array.Empty<string>(), execOut: Array.Empty<string>()));
                 return nodeId;
@@ -203,7 +203,7 @@ public sealed class AstToVisualScriptGraphMapper
                 AddNode(
                     nodeId,
                     type,
-                    NextExpressionPosition(),
+                    PositionForNode(binary, NextExpressionPosition),
                     new { label = BinaryLabel(type), role = "Expression", detail = BinaryDetail(binary.Operator), operatorSymbol = binary.Operator },
                     Handles(dataIn: new[] { "left", "right" }, dataOut: new[] { "out" }, execIn: Array.Empty<string>(), execOut: Array.Empty<string>()));
 
@@ -334,6 +334,20 @@ public sealed class AstToVisualScriptGraphMapper
         var position = new VisualScriptGraphPositionDto { X = 520, Y = _expressionY };
         _expressionY += 120;
         return position;
+    }
+
+    private static VisualScriptGraphPositionDto PositionForNode(AstNode node, Func<VisualScriptGraphPositionDto> fallbackFactory)
+    {
+        if (node.GraphX.HasValue && node.GraphY.HasValue)
+        {
+            return new VisualScriptGraphPositionDto
+            {
+                X = node.GraphX.Value,
+                Y = node.GraphY.Value,
+            };
+        }
+
+        return fallbackFactory();
     }
 
     private static string BinaryType(string @operator)

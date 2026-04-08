@@ -130,6 +130,9 @@ public sealed class VisualScriptGraphToAstMapper
         return new LocalDeclarationStatementNode
         {
             NodeId = node.Id,
+            GraphNodeType = node.Type,
+            GraphX = node.Position.X,
+            GraphY = node.Position.Y,
             Name = name,
             Value = value,
         };
@@ -169,6 +172,9 @@ public sealed class VisualScriptGraphToAstMapper
         return new AssignmentStatementNode
         {
             NodeId = node.Id,
+            GraphNodeType = node.Type,
+            GraphX = node.Position.X,
+            GraphY = node.Position.Y,
             Name = targetName,
             Value = value,
         };
@@ -191,6 +197,9 @@ public sealed class VisualScriptGraphToAstMapper
         return new ReturnStatementNode
         {
             NodeId = node.Id,
+            GraphNodeType = node.Type,
+            GraphX = node.Position.X,
+            GraphY = node.Position.Y,
             Value = value,
         };
     }
@@ -212,6 +221,9 @@ public sealed class VisualScriptGraphToAstMapper
         return new FunctionCallNode
         {
             NodeId = node.Id,
+            GraphNodeType = node.Type,
+            GraphX = node.Position.X,
+            GraphY = node.Position.Y,
             FunctionName = "print",
             Arguments = new List<AstNode> { arg },
         };
@@ -243,16 +255,25 @@ public sealed class VisualScriptGraphToAstMapper
                 "localDecl" => new IdentifierExpressionNode
                 {
                     NodeId = node.Id,
+                    GraphNodeType = node.Type,
+                    GraphX = node.Position.X,
+                    GraphY = node.Position.Y,
                     Name = GetDataString(node.Data, "variableName") ?? "value",
                 },
                 "identifier" => new IdentifierExpressionNode
                 {
                     NodeId = node.Id,
+                    GraphNodeType = node.Type,
+                    GraphX = node.Position.X,
+                    GraphY = node.Position.Y,
                     Name = GetDataString(node.Data, "variableName") ?? "value",
                 },
                 "numberLiteral" => new NumberLiteralExpressionNode
                 {
                     NodeId = node.Id,
+                    GraphNodeType = node.Type,
+                    GraphX = node.Position.X,
+                    GraphY = node.Position.Y,
                     RawText = GetDataString(node.Data, "value") ?? "0",
                 },
                 "add" or "subtract" or "multiply" or "divide" or "modulo" =>
@@ -305,6 +326,9 @@ public sealed class VisualScriptGraphToAstMapper
         return new BinaryExpressionNode
         {
             NodeId = node.Id,
+            GraphNodeType = node.Type,
+            GraphX = node.Position.X,
+            GraphY = node.Position.Y,
             Operator = BinaryOperator(node.Type),
             Left = left,
             Right = right,

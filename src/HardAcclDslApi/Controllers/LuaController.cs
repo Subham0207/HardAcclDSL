@@ -156,7 +156,8 @@ public class LuaController : ControllerBase
             });
         }
 
-        var ast = parseResult.AstRoot ?? new ProgramNode();
+    var ast = parseResult.AstRoot ?? new ProgramNode();
+    LuaGraphPositionCommentCodec.ApplyCommentsToAst(luaCode, ast);
         var mapped = _astToGraphMapper.Map(ast);
 
         return Ok(new LuaToVisualScriptResponse
@@ -225,13 +226,14 @@ public class LuaController : ControllerBase
 
         var result = _graphToAstMapper.Map(request.GraphSnapshot);
         var luaCode = _astToLuaRenderer.RenderProgram(result.Ast);
+        var luaCodeWithGraphComments = _astToLuaRenderer.RenderProgram(result.Ast, includeGraphPositionComments: true);
         var execution = _luaExecutionService.Execute(luaCode);
 
         await _scriptStorageService.SaveScriptAsync(new SaveLuaScriptRequest
         {
             User = request.User,
             ScriptName = request.ScriptName,
-            LuaCode = luaCode,
+            LuaCode = luaCodeWithGraphComments,
         }, cancellationToken);
 
         return Ok(new VisualScriptGraphToAstResponse
