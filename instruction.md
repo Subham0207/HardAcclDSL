@@ -48,6 +48,10 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 		- `error`
 		- `returnValues`
 		- `printedLines` (captured `print(...)` output)
+- POST /api/lua/lua-to-visualscript
+	- Receives Lua code and returns parsed AST plus mapped VisualScript graph snapshot.
+- GET /api/lua/lua-to-visualscript/default
+	- Uses hardcoded bootstrap Lua (`local result = 10`) and returns mapped AST + graph snapshot for first-load UI hydration.
 
 ### 3.1) Visual Script UI (React Flow Prototype)
 - Installed React Flow library (`@xyflow/react`) in `visualscript/`.
@@ -107,6 +111,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- printed execution output lines
 	- runtime execution errors
 - Frontend graph-to-AST conversion was intentionally removed; backend will own graph-to-AST mapping.
+- Frontend now bootstraps graph state on first load by calling `/api/lua/lua-to-visualscript/default` and loading returned snapshot into the canvas.
 - Backend now uses explicit `VisualScriptGraph...` naming for clarity:
 	- `VisualScriptGraphSnapshotDto`
 	- `VisualScriptGraphIndex`
@@ -116,6 +121,9 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- what node owns a pin
 	- what node executes next via `exec-out -> exec-in`
 - Backend mapper service now exists: `VisualScriptGraphToAstMapper`.
+- Added reverse mapper service: `AstToVisualScriptGraphMapper`.
+	- Maps AST statements/expressions into typed VisualScript nodes and edges.
+	- Emits both execution flow edges and data flow edges.
 - Current mapper coverage:
 	- statement nodes: `localDecl`, `assignment`, `return`, `print`
 	- expression nodes: `identifier`, `numberLiteral`, `add/subtract/multiply/divide/modulo`
@@ -146,11 +154,13 @@ AST JSON contract (latest):
 	- ANTLR to AST mapping tests
 - VisualScript graph-to-AST mapper tests
 - Lua execution service tests (return values, runtime error, and print capture)
+- AST-to-VisualScript mapper tests
+- Lua-to-VisualScript controller endpoint tests
 - Added route-level regression test for `/api/lua/graph-to-ast` with a shared-`result` expression graph.
 - Large route request/response payloads are now stored as fixtures in:
 	- `tests/HardAcclDslApi.UnitTests/TestData/graph-to-ast-request.json`
 	- `tests/HardAcclDslApi.UnitTests/TestData/graph-to-ast-response.json`
-- Current count: 25 passing tests.
+- Current count: 27 passing tests.
 - AST mapping tests verify whole-tree structural equality while ignoring NodeId.
 
 ### 5) AST Model (Updated)

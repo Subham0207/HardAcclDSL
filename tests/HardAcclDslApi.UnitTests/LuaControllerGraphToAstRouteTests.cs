@@ -28,6 +28,7 @@ public class LuaControllerGraphToAstRouteTests
             new LuaToIR(parserService),
             parserService,
             new VisualScriptGraphToAstMapper(),
+            new AstToVisualScriptGraphMapper(),
             new AstToLuaScribanRenderer(),
             new LuaExecutionService());
 

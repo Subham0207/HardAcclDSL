@@ -15,6 +15,7 @@ builder.Services.AddControllers()
 builder.Services.AddSingleton<AntlrLuaParserService>();
 builder.Services.AddSingleton<LuaToIR>();
 builder.Services.AddSingleton<VisualScriptGraphToAstMapper>();
+builder.Services.AddSingleton<AstToVisualScriptGraphMapper>();
 builder.Services.AddSingleton<AstToLuaScribanRenderer>();
 builder.Services.AddSingleton<LuaExecutionService>();
 var corsAllowedOrigin = builder.Configuration["CORS_ALLOWED_ORIGIN"] ?? "*";

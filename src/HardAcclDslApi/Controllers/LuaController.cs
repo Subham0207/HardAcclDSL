@@ -10,9 +10,12 @@ namespace HardAcclDslApi.Controllers;
 [Route("api/[controller]")]
 public class LuaController : ControllerBase
 {
+    private const string DefaultVisualScriptLua = "local result = 10";
+
     private readonly LuaToIR _luaToIr;
     private readonly AntlrLuaParserService _parserService;
     private readonly VisualScriptGraphToAstMapper _graphToAstMapper;
+    private readonly AstToVisualScriptGraphMapper _astToGraphMapper;
     private readonly AstToLuaScribanRenderer _astToLuaRenderer;
     private readonly LuaExecutionService _luaExecutionService;
 
@@ -20,12 +23,14 @@ public class LuaController : ControllerBase
         LuaToIR luaToIr,
         AntlrLuaParserService parserService,
         VisualScriptGraphToAstMapper graphToAstMapper,
+        AstToVisualScriptGraphMapper astToGraphMapper,
         AstToLuaScribanRenderer astToLuaRenderer,
         LuaExecutionService luaExecutionService)
     {
         _luaToIr = luaToIr;
         _parserService = parserService;
         _graphToAstMapper = graphToAstMapper;
+        _astToGraphMapper = astToGraphMapper;
         _astToLuaRenderer = astToLuaRenderer;
         _luaExecutionService = luaExecutionService;
     }
@@ -100,6 +105,59 @@ public class LuaController : ControllerBase
         return Ok(new AstOnlyResponse
         {
             Ast = parseResult.AstRoot ?? new ProgramNode()
+        });
+    }
+
+    [HttpPost("lua-to-visualscript")]
+    public ActionResult<LuaToVisualScriptResponse> LuaToVisualScript([FromBody] LuaConvertRequest request)
+    {
+        if (request is null || string.IsNullOrWhiteSpace(request.LuaCode))
+        {
+            return BadRequest("luaCode is required.");
+        }
+
+        var parseResult = _parserService.Parse(request.LuaCode);
+        if (!parseResult.IsValid)
+        {
+            var firstError = parseResult.Errors[0];
+            return BadRequest(new
+            {
+                error = $"Lua syntax error at line {firstError.Line}, column {firstError.Column}: {firstError.Message}"
+            });
+        }
+
+        var ast = parseResult.AstRoot ?? new ProgramNode();
+        var mapped = _astToGraphMapper.Map(ast);
+
+        return Ok(new LuaToVisualScriptResponse
+        {
+            Ast = ast,
+            GraphSnapshot = mapped.Snapshot,
+            Diagnostics = mapped.Diagnostics,
+        });
+    }
+
+    [HttpGet("lua-to-visualscript/default")]
+    public ActionResult<LuaToVisualScriptResponse> DefaultLuaToVisualScript()
+    {
+        var parseResult = _parserService.Parse(DefaultVisualScriptLua);
+        if (!parseResult.IsValid)
+        {
+            var firstError = parseResult.Errors[0];
+            return BadRequest(new
+            {
+                error = $"Lua syntax error at line {firstError.Line}, column {firstError.Column}: {firstError.Message}"
+            });
+        }
+
+        var ast = parseResult.AstRoot ?? new ProgramNode();
+        var mapped = _astToGraphMapper.Map(ast);
+
+        return Ok(new LuaToVisualScriptResponse
+        {
+            Ast = ast,
+            GraphSnapshot = mapped.Snapshot,
+            Diagnostics = mapped.Diagnostics,
         });
     }
 
@@ -185,4 +243,12 @@ public sealed class VisualScriptGraphToAstResponse
         Array.Empty<VisualScriptGraphDiagnostic>();
     public string LuaCode { get; init; } = string.Empty;
     public LuaExecutionResult Execution { get; init; } = new();
+}
+
+public sealed class LuaToVisualScriptResponse
+{
+    public ProgramNode Ast { get; init; } = new();
+    public VisualScriptGraphSnapshotDto GraphSnapshot { get; init; } = new();
+    public IReadOnlyList<VisualScriptGraphDiagnostic> Diagnostics { get; init; } =
+        Array.Empty<VisualScriptGraphDiagnostic>();
 }

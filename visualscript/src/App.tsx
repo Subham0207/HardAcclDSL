@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import '@xyflow/react/dist/style.css'
 import './App.css'
 import { GraphCanvas, type GraphCanvasHandle } from './features/graph/GraphCanvas'
 import { starterNodeTemplates } from './features/graph/initialGraph'
 import { ExecutionConsole } from './features/console/ExecutionConsole'
+import type { GraphSnapshot } from './features/graph/graphSnapshot'
 
 type GraphToAstResponse = {
   luaCode: string
@@ -15,6 +16,10 @@ type GraphToAstResponse = {
   }
 }
 
+type LuaToVisualScriptResponse = {
+  graphSnapshot: GraphSnapshot
+}
+
 function App() {
   const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? ''
   const graphRef = useRef<GraphCanvasHandle | null>(null)
@@ -24,6 +29,33 @@ function App() {
   const [printedLines, setPrintedLines] = useState<string[]>([])
   const [executionError, setExecutionError] = useState<string>('')
   const [luaCode, setLuaCode] = useState<string>('')
+
+  useEffect(() => {
+    const loadDefaultGraph = async () => {
+      try {
+        const endpoint = apiBaseUrl
+          ? `${apiBaseUrl}/api/lua/lua-to-visualscript/default`
+          : '/api/lua/lua-to-visualscript/default'
+
+        const response = await fetch(endpoint)
+        const responseText = await response.text()
+        if (!response.ok) {
+          setSendStatus(`Bootstrap failed (${response.status}): ${responseText}`)
+          return
+        }
+
+        const payload = JSON.parse(responseText) as LuaToVisualScriptResponse
+        if (payload.graphSnapshot) {
+          graphRef.current?.loadGraphSnapshot(payload.graphSnapshot)
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        setSendStatus(`Bootstrap failed: ${message}`)
+      }
+    }
+
+    loadDefaultGraph()
+  }, [apiBaseUrl])
 
   return (
     <div className="app-shell">

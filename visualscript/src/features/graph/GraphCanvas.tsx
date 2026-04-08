@@ -22,6 +22,7 @@ import { buildGraphSnapshot, type GraphSnapshot } from './graphSnapshot'
 export type GraphCanvasHandle = {
   addNodeAtViewportCenter: (type: StarterNodeType) => void
   exportGraphSnapshot: () => GraphSnapshot
+  loadGraphSnapshot: (snapshot: GraphSnapshot) => void
 }
 
 type GraphCanvasProps = {
@@ -108,8 +109,38 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         setNodes((current) => [...current, node])
       },
       exportGraphSnapshot: () => buildGraphSnapshot(nodes, edges),
+      loadGraphSnapshot: (snapshot: GraphSnapshot) => {
+        const nextNodes = snapshot.nodes.map((node) => ({
+          id: node.id,
+          type: node.type,
+          position: node.position,
+          data: node.data,
+        })) as ScriptFlowNode[]
+
+        const nextEdges: Edge[] = snapshot.edges.map((edge) => ({
+          id: edge.id,
+          source: edge.source,
+          sourceHandle: edge.sourceHandle,
+          target: edge.target,
+          targetHandle: edge.targetHandle,
+          animated: edge.flow === 'exec',
+          type: 'smoothstep',
+          ...(edge.flow === 'exec'
+            ? {
+                style: { stroke: '#2b8a3e', strokeWidth: 3, strokeDasharray: '6 4' },
+                markerEnd: {
+                  type: MarkerType.ArrowClosed,
+                  color: '#2b8a3e',
+                },
+              }
+            : {}),
+        }))
+
+        setNodes(nextNodes)
+        setEdges(nextEdges)
+      },
     }),
-    [edges, nodes, setNodes, viewportRef],
+    [edges, nodes, setEdges, setNodes, viewportRef],
   )
 
   return (
