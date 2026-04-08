@@ -10,7 +10,7 @@ namespace HardAcclDslApi.UnitTests;
 public class LuaControllerGraphToAstRouteTests
 {
     [Fact]
-    public void GraphToAst_WithSharedLocalDeclInExpressionTree_DoesNotReportFalseCycleAndExecutes()
+    public async Task GraphToAst_WithSharedLocalDeclInExpressionTree_DoesNotReportFalseCycleAndExecutes()
     {
         var snapshotJson = ReadTestDataFile("graph-to-ast-request.json");
         var expectedJson = ReadTestDataFile("graph-to-ast-response.json");
@@ -30,9 +30,17 @@ public class LuaControllerGraphToAstRouteTests
             new VisualScriptGraphToAstMapper(),
             new AstToVisualScriptGraphMapper(),
             new AstToLuaScribanRenderer(),
-            new LuaExecutionService());
+            new LuaExecutionService(),
+            TestLuaScriptStorageFactory.Create());
 
-        var actionResult = controller.GraphToAst(snapshot!);
+        var request = new GraphToAstRequest
+        {
+            User = "demo-user",
+            ScriptName = "shared-result-graph",
+            GraphSnapshot = snapshot!,
+        };
+
+        var actionResult = await controller.GraphToAst(request, CancellationToken.None);
         var ok = Assert.IsType<OkObjectResult>(actionResult.Result);
         var response = Assert.IsType<VisualScriptGraphToAstResponse>(ok.Value);
 

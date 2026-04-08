@@ -64,6 +64,32 @@
   gap: 8px;
 }
 
+.legend-field {
+  display: grid;
+  gap: 4px;
+}
+
+.legend-field > span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #35577a;
+}
+
+.legend-input {
+  width: 100%;
+  border: 1px solid #c6d8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #15426d;
+  font-size: 0.82rem;
+  padding: 7px 9px;
+}
+
+.legend-input:focus-visible {
+  outline: 2px solid #2c78c6;
+  outline-offset: 1px;
+}
+
 .legend-ast-preview {
   margin: 12px 0 0;
   max-height: 260px;

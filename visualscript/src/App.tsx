@@ -20,6 +20,12 @@ type LuaToVisualScriptResponse = {
   graphSnapshot: GraphSnapshot
 }
 
+type GraphToAstRequest = {
+  user: string
+  scriptName: string
+  graphSnapshot: GraphSnapshot
+}
+
 function App() {
   const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? ''
   const graphRef = useRef<GraphCanvasHandle | null>(null)
@@ -29,6 +35,8 @@ function App() {
   const [printedLines, setPrintedLines] = useState<string[]>([])
   const [executionError, setExecutionError] = useState<string>('')
   const [luaCode, setLuaCode] = useState<string>('')
+  const [userName, setUserName] = useState<string>('')
+  const [scriptName, setScriptName] = useState<string>('')
 
   useEffect(() => {
     const loadDefaultGraph = async () => {
@@ -81,13 +89,26 @@ function App() {
               setGraphPreview(JSON.stringify(snapshot, null, 2))
 
               try {
+                const trimmedUser = userName.trim()
+                const trimmedScriptName = scriptName.trim()
+                if (!trimmedUser || !trimmedScriptName) {
+                  setSendStatus('Username and script name are required before sending.')
+                  return
+                }
+
                 const endpoint = apiBaseUrl ? `${apiBaseUrl}/api/lua/graph-to-ast` : '/api/lua/graph-to-ast'
+                const requestPayload: GraphToAstRequest = {
+                  user: trimmedUser,
+                  scriptName: trimmedScriptName,
+                  graphSnapshot: snapshot,
+                }
+
                 const response = await fetch(endpoint, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify(snapshot),
+                  body: JSON.stringify(requestPayload),
                 })
 
                 const responseText = await response.text()
@@ -116,6 +137,26 @@ function App() {
             Send Graph Snapshot
           </button>
           <div className="legend-buttons">
+            <label className="legend-field">
+              <span>Username</span>
+              <input
+                className="legend-input"
+                type="text"
+                value={userName}
+                onChange={(event) => setUserName(event.target.value)}
+                placeholder="Enter username"
+              />
+            </label>
+            <label className="legend-field">
+              <span>Script Name</span>
+              <input
+                className="legend-input"
+                type="text"
+                value={scriptName}
+                onChange={(event) => setScriptName(event.target.value)}
+                placeholder="Enter script name"
+              />
+            </label>
             {starterNodeTemplates.map((template) => (
               <button
                 key={template.type}

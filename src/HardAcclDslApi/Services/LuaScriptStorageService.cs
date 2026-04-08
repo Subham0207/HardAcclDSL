@@ -30,38 +30,30 @@ public sealed class LuaScriptStorageService : ILuaScriptStorageService
 
     public async Task<SaveLuaScriptResult> SaveScriptAsync(SaveLuaScriptRequest request, CancellationToken cancellationToken)
     {
-        var key = $"{Guid.NewGuid():N}.lua";
-        var s3Link = $"s3://{_bucketName}/{key}";
-
-        try
+        var existing = await _dynamo.GetItemAsync(new GetItemRequest
         {
-            await _dynamo.PutItemAsync(new PutItemRequest
+            TableName = _tableName,
+            Key = new Dictionary<string, AttributeValue>
             {
-                TableName = _tableName,
-                Item = new Dictionary<string, AttributeValue>
-                {
-                    ["user"] = new AttributeValue { S = request.User },
-                    ["scriptname"] = new AttributeValue { S = request.ScriptName },
-                    ["s3Link"] = new AttributeValue { S = s3Link },
-                },
-                ConditionExpression = "attribute_not_exists(#u) AND attribute_not_exists(#s)",
-                ExpressionAttributeNames = new Dictionary<string, string>
-                {
-                    ["#u"] = "user",
-                    ["#s"] = "scriptname",
-                }
-            }, cancellationToken);
-        }
-        catch (ConditionalCheckFailedException)
-        {
-            return SaveLuaScriptResult.FromConflict(request.User, request.ScriptName);
-        }
+                ["user"] = new AttributeValue { S = request.User },
+                ["scriptname"] = new AttributeValue { S = request.ScriptName },
+            },
+            ConsistentRead = true,
+        }, cancellationToken);
+
+        var hasExisting = existing.Item.Count > 0;
+        var existingLocation = hasExisting
+            ? ParseS3Link(existing.Item["s3Link"].S)
+            : default;
+        var bucket = hasExisting ? existingLocation.bucket : _bucketName;
+        var key = hasExisting ? existingLocation.key : $"{Guid.NewGuid():N}.lua";
+        var s3Link = hasExisting ? existing.Item["s3Link"].S : $"s3://{bucket}/{key}";
 
         try
         {
             await _s3.PutObjectAsync(new PutObjectRequest
             {
-                BucketName = _bucketName,
+                BucketName = bucket,
                 Key = key,
                 ContentBody = request.LuaCode,
                 ContentType = "text/plain; charset=utf-8",
@@ -69,19 +61,33 @@ public sealed class LuaScriptStorageService : ILuaScriptStorageService
         }
         catch
         {
-            await _dynamo.DeleteItemAsync(new DeleteItemRequest
+            if (!hasExisting)
             {
-                TableName = _tableName,
-                Key = new Dictionary<string, AttributeValue>
+                await _dynamo.DeleteItemAsync(new DeleteItemRequest
                 {
-                    ["user"] = new AttributeValue { S = request.User },
-                    ["scriptname"] = new AttributeValue { S = request.ScriptName },
-                }
-            }, cancellationToken);
+                    TableName = _tableName,
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        ["user"] = new AttributeValue { S = request.User },
+                        ["scriptname"] = new AttributeValue { S = request.ScriptName },
+                    }
+                }, cancellationToken);
+            }
             throw;
         }
 
-        return SaveLuaScriptResult.Success(request.User, request.ScriptName, s3Link);
+        await _dynamo.PutItemAsync(new PutItemRequest
+        {
+            TableName = _tableName,
+            Item = new Dictionary<string, AttributeValue>
+            {
+                ["user"] = new AttributeValue { S = request.User },
+                ["scriptname"] = new AttributeValue { S = request.ScriptName },
+                ["s3Link"] = new AttributeValue { S = s3Link },
+            },
+        }, cancellationToken);
+
+        return SaveLuaScriptResult.Success(request.User, request.ScriptName, s3Link, !hasExisting);
     }
 
     public async Task<StoredLuaScript?> GetScriptAsync(string user, string scriptName, CancellationToken cancellationToken)
@@ -103,9 +109,9 @@ public sealed class LuaScriptStorageService : ILuaScriptStorageService
         }
 
         var s3Link = itemResponse.Item["s3Link"].S;
-        var (_, key) = ParseS3Link(s3Link);
+        var (bucket, key) = ParseS3Link(s3Link);
 
-        using var objectResponse = await _s3.GetObjectAsync(_bucketName, key, cancellationToken);
+        using var objectResponse = await _s3.GetObjectAsync(bucket, key, cancellationToken);
         using var reader = new StreamReader(objectResponse.ResponseStream);
         var luaCode = await reader.ReadToEndAsync(cancellationToken);
 
@@ -161,11 +167,11 @@ public sealed class LuaScriptStorageService : ILuaScriptStorageService
         }
 
         var s3Link = existing.Item["s3Link"].S;
-        var (_, key) = ParseS3Link(s3Link);
+        var (bucket, key) = ParseS3Link(s3Link);
 
         try
         {
-            await _s3.DeleteObjectAsync(_bucketName, key, cancellationToken);
+            await _s3.DeleteObjectAsync(bucket, key, cancellationToken);
         }
         catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
@@ -216,31 +222,18 @@ public sealed class SaveLuaScriptRequest
 public sealed class SaveLuaScriptResult
 {
     public bool Created { get; init; }
-    public bool IsConflict { get; init; }
     public string User { get; init; } = string.Empty;
     public string ScriptName { get; init; } = string.Empty;
     public string S3Link { get; init; } = string.Empty;
 
-    public static SaveLuaScriptResult Success(string user, string scriptName, string s3Link)
+    public static SaveLuaScriptResult Success(string user, string scriptName, string s3Link, bool created)
     {
         return new SaveLuaScriptResult
         {
-            Created = true,
-            IsConflict = false,
+            Created = created,
             User = user,
             ScriptName = scriptName,
             S3Link = s3Link,
-        };
-    }
-
-    public static SaveLuaScriptResult FromConflict(string user, string scriptName)
-    {
-        return new SaveLuaScriptResult
-        {
-            Created = false,
-            IsConflict = true,
-            User = user,
-            ScriptName = scriptName,
         };
     }
 }

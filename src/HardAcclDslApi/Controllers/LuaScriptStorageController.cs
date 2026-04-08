@@ -32,14 +32,6 @@ public sealed class LuaScriptStorageController : ControllerBase
             LuaCode = request.LuaCode,
         }, cancellationToken);
 
-        if (result.IsConflict)
-        {
-            return Conflict(new
-            {
-                error = $"Script '{request.ScriptName}' already exists for user '{request.User}'."
-            });
-        }
-
         return Ok(new SaveLuaScriptResponse
         {
             User = result.User,

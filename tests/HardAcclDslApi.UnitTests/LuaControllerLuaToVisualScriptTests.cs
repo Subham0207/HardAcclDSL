@@ -16,7 +16,8 @@ public class LuaControllerLuaToVisualScriptTests
             new VisualScriptGraphToAstMapper(),
             new AstToVisualScriptGraphMapper(),
             new AstToLuaScribanRenderer(),
-            new LuaExecutionService());
+            new LuaExecutionService(),
+            TestLuaScriptStorageFactory.Create());
 
         var result = controller.LuaToVisualScript(new LuaConvertRequest
         {

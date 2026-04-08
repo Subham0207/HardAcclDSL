@@ -18,6 +18,7 @@ public class LuaController : ControllerBase
     private readonly AstToVisualScriptGraphMapper _astToGraphMapper;
     private readonly AstToLuaScribanRenderer _astToLuaRenderer;
     private readonly LuaExecutionService _luaExecutionService;
+    private readonly ILuaScriptStorageService _scriptStorageService;
 
     public LuaController(
         LuaToIR luaToIr,
@@ -25,7 +26,8 @@ public class LuaController : ControllerBase
         VisualScriptGraphToAstMapper graphToAstMapper,
         AstToVisualScriptGraphMapper astToGraphMapper,
         AstToLuaScribanRenderer astToLuaRenderer,
-        LuaExecutionService luaExecutionService)
+        LuaExecutionService luaExecutionService,
+        ILuaScriptStorageService scriptStorageService)
     {
         _luaToIr = luaToIr;
         _parserService = parserService;
@@ -33,6 +35,7 @@ public class LuaController : ControllerBase
         _astToGraphMapper = astToGraphMapper;
         _astToLuaRenderer = astToLuaRenderer;
         _luaExecutionService = luaExecutionService;
+        _scriptStorageService = scriptStorageService;
     }
 
     [HttpPost("convert")]
@@ -183,16 +186,26 @@ public class LuaController : ControllerBase
     }
 
     [HttpPost("graph-to-ast")]
-    public ActionResult<VisualScriptGraphToAstResponse> GraphToAst([FromBody] VisualScriptGraphSnapshotDto snapshot)
+    public async Task<ActionResult<VisualScriptGraphToAstResponse>> GraphToAst([FromBody] GraphToAstRequest request, CancellationToken cancellationToken)
     {
-        if (snapshot is null)
+        if (request is null ||
+            string.IsNullOrWhiteSpace(request.User) ||
+            string.IsNullOrWhiteSpace(request.ScriptName) ||
+            request.GraphSnapshot is null)
         {
-            return BadRequest("Graph snapshot is required.");
+            return BadRequest("user, scriptName, and graphSnapshot are required.");
         }
 
-        var result = _graphToAstMapper.Map(snapshot);
+        var result = _graphToAstMapper.Map(request.GraphSnapshot);
         var luaCode = _astToLuaRenderer.RenderProgram(result.Ast);
         var execution = _luaExecutionService.Execute(luaCode);
+
+        await _scriptStorageService.SaveScriptAsync(new SaveLuaScriptRequest
+        {
+            User = request.User,
+            ScriptName = request.ScriptName,
+            LuaCode = luaCode,
+        }, cancellationToken);
 
         return Ok(new VisualScriptGraphToAstResponse
         {
@@ -243,6 +256,13 @@ public sealed class VisualScriptGraphToAstResponse
         Array.Empty<VisualScriptGraphDiagnostic>();
     public string LuaCode { get; init; } = string.Empty;
     public LuaExecutionResult Execution { get; init; } = new();
+}
+
+public sealed class GraphToAstRequest
+{
+    public string User { get; init; } = string.Empty;
+    public string ScriptName { get; init; } = string.Empty;
+    public VisualScriptGraphSnapshotDto GraphSnapshot { get; init; } = new();
 }
 
 public sealed class LuaToVisualScriptResponse
