@@ -1,5 +1,8 @@
 using HardAcclDslApi.Services;
 using HardAcclDslApi.Models.Ast;
+using Amazon.DynamoDBv2;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.S3;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +21,10 @@ builder.Services.AddSingleton<VisualScriptGraphToAstMapper>();
 builder.Services.AddSingleton<AstToVisualScriptGraphMapper>();
 builder.Services.AddSingleton<AstToLuaScribanRenderer>();
 builder.Services.AddSingleton<LuaExecutionService>();
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddAWSService<IAmazonDynamoDB>();
+builder.Services.AddSingleton<ILuaScriptStorageService, LuaScriptStorageService>();
 var corsAllowedOrigin = builder.Configuration["CORS_ALLOWED_ORIGIN"] ?? "*";
 builder.Services.AddCors(options =>
 {

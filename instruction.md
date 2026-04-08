@@ -52,6 +52,18 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Receives Lua code and returns parsed AST plus mapped VisualScript graph snapshot.
 - GET /api/lua/lua-to-visualscript/default
 	- Uses hardcoded bootstrap Lua (`local result = 10`) and returns mapped AST + graph snapshot for first-load UI hydration.
+- Added new Lua script storage controller: `LuaScriptStorageController` under `api/lua-scripts`.
+	- `POST /api/lua-scripts/save`
+		- request body: `user`, `scriptName`, `luaCode`
+		- stores Lua code in S3 as `uuid.lua`
+		- stores DynamoDB metadata row with keys `user` (PK), `scriptname` (SK), and `s3Link`
+		- rejects duplicate `(user, scriptName)` with conflict response
+	- `GET /api/lua-scripts/{user}/{scriptName}`
+		- reads metadata from DynamoDB and Lua content from S3
+	- `GET /api/lua-scripts/{user}`
+		- lists script metadata rows for user
+	- `DELETE /api/lua-scripts/{user}/{scriptName}`
+		- deletes both S3 object and DynamoDB metadata row
 
 ### 3.1) Visual Script UI (React Flow Prototype)
 - Installed React Flow library (`@xyflow/react`) in `visualscript/`.
@@ -124,6 +136,10 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Added reverse mapper service: `AstToVisualScriptGraphMapper`.
 	- Maps AST statements/expressions into typed VisualScript nodes and edges.
 	- Emits both execution flow edges and data flow edges.
+- Added storage service: `LuaScriptStorageService` implementing `ILuaScriptStorageService`.
+	- Uses AWS SDK S3 + DynamoDB clients.
+	- Uses conditional writes in DynamoDB to enforce unique `(user, scriptname)`.
+	- Stores only `s3Link` in DynamoDB (no Lua content duplication).
 - Current mapper coverage:
 	- statement nodes: `localDecl`, `assignment`, `return`, `print`
 	- expression nodes: `identifier`, `numberLiteral`, `add/subtract/multiply/divide/modulo`
@@ -188,6 +204,14 @@ AST JSON contract (latest):
 	- Creates API Gateway HTTP API with Lambda proxy integration and routes (`ANY /`, `ANY /{proxy+}`).
 	- Configures API stage and invoke permission.
 	- Exposes output key `HardAcclDSLApiUrl`.
+	- Creates S3 bucket `hardaccldsl-scripts` for Lua script files.
+	- Creates DynamoDB table `HardAcclDSLScriptStore` with key schema:
+		- PK: `user`
+		- SK: `scriptname`
+	- Adds Lambda IAM permissions for DynamoDB (`GetItem/PutItem/DeleteItem/Query`) and S3 (`GetObject/PutObject/DeleteObject/ListBucket`).
+	- Injects runtime env vars into Lambda:
+		- `SCRIPT_BUCKET_NAME`
+		- `SCRIPT_TABLE_NAME`
 
 Deployment conventions now in use:
 - Region fixed to `us-east-1` in backend workflow.
@@ -205,6 +229,10 @@ Operational notes:
 - Current model: set repository variable `HARDACCLDSL_API_URL` manually to the API Gateway URL.
 - Added ASP.NET Core CORS middleware in backend (`Program.cs`) and wired `CORS_ALLOWED_ORIGIN` through CloudFormation Lambda environment.
 	- This resolved deployed browser preflight failure (`OPTIONS 405`) for frontend -> API Gateway requests.
+- Script storage conventions:
+	- S3 object keys use UUID filenames (`uuid.lua`) to make script rename operations metadata-only.
+	- No versioning implemented.
+	- User identity is provided from request body for now (no auth flow yet).
 
 ## Current Grammar Scope (Lua Subset)
 Supported now:

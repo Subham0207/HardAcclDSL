@@ -19,6 +19,27 @@ Parameters:
     Description: Allowed CORS origin for frontend requests.
 
 Resources:
+  HardAcclDSLBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: hardaccldsl
+
+  HardAcclDSLTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: HardAcclDSL
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user
+          AttributeType: S
+        - AttributeName: scriptname
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user
+          KeyType: HASH
+        - AttributeName: scriptname
+          KeyType: RANGE
+
   BackendLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -32,6 +53,28 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: HardAcclDslDataAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                Resource: !GetAtt HardAcclDSLTable.Arn
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub '${HardAcclDSLBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt HardAcclDSLBucket.Arn
 
   BackendLambdaFunction:
     Type: AWS::Lambda::Function
@@ -44,6 +87,8 @@ Resources:
       Environment:
         Variables:
           CORS_ALLOWED_ORIGIN: !Ref AllowedOrigin
+          SCRIPT_BUCKET_NAME: !Ref HardAcclDSLBucket
+          SCRIPT_TABLE_NAME: !Ref HardAcclDSLTable
       Timeout: 30
       MemorySize: 1024
       Architectures:
