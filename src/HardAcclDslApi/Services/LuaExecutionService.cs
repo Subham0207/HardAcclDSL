@@ -1,10 +1,12 @@
 using LuaNET.Lua54;
 using static LuaNET.Lua54.Lua;
+using System.Text.RegularExpressions;
 
 namespace HardAcclDslApi.Services;
 
 public sealed class LuaExecutionService
 {
+    private static readonly Regex GlobalNameRegex = new("^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     // Capture Lua print(...) output in-memory so the API can return it as structured response data.
         private const string InitializeOutputCaptureScript = @"
 __dotnet_outputs = {}
@@ -25,7 +27,7 @@ end
 return table.concat(__dotnet_outputs, '\n')
 ";
 
-    public LuaExecutionResult Execute(string luaCode)
+    public LuaExecutionResult Execute(string luaCode, IReadOnlyDictionary<string, double>? numberGlobals = null)
     {
         if (string.IsNullOrWhiteSpace(luaCode))
         {
@@ -47,6 +49,15 @@ return table.concat(__dotnet_outputs, '\n')
             {
                 var initializeError = ReadErrorMessage(state);
                 return LuaExecutionResult.Failure($"Lua init error: {initializeError}");
+            }
+
+            if (numberGlobals is not null)
+            {
+                var globalsValidationError = TryInjectNumberGlobals(state, numberGlobals);
+                if (globalsValidationError is not null)
+                {
+                    return LuaExecutionResult.Failure(globalsValidationError);
+                }
             }
 
             var loadStatus = luaL_loadstring(state, luaCode);
@@ -83,6 +94,27 @@ return table.concat(__dotnet_outputs, '\n')
         {
             lua_close(state);
         }
+    }
+
+    private static string? TryInjectNumberGlobals(lua_State state, IReadOnlyDictionary<string, double> numberGlobals)
+    {
+        foreach (var entry in numberGlobals)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Key) || !GlobalNameRegex.IsMatch(entry.Key))
+            {
+                return $"Invalid global variable name '{entry.Key}'. Use Lua identifier format [A-Za-z_][A-Za-z0-9_]*.";
+            }
+
+            if (double.IsNaN(entry.Value) || double.IsInfinity(entry.Value))
+            {
+                return $"Global variable '{entry.Key}' must be a finite number.";
+            }
+
+            lua_pushnumber(state, entry.Value);
+            lua_setglobal(state, entry.Key);
+        }
+
+        return null;
     }
 
     private static string ReadErrorMessage(lua_State state)

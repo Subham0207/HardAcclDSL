@@ -227,7 +227,7 @@ public class LuaController : ControllerBase
         var result = _graphToAstMapper.Map(request.GraphSnapshot);
         var luaCode = _astToLuaRenderer.RenderProgram(result.Ast);
         var luaCodeWithGraphComments = _astToLuaRenderer.RenderProgram(result.Ast, includeGraphPositionComments: true);
-        var execution = _luaExecutionService.Execute(luaCode);
+        var execution = _luaExecutionService.Execute(luaCode, request.Globals);
 
         await _scriptStorageService.SaveScriptAsync(new SaveLuaScriptRequest
         {
@@ -292,6 +292,7 @@ public sealed class GraphToAstRequest
     public string User { get; init; } = string.Empty;
     public string ScriptName { get; init; } = string.Empty;
     public VisualScriptGraphSnapshotDto GraphSnapshot { get; init; } = new();
+    public Dictionary<string, double> Globals { get; init; } = new(StringComparer.Ordinal);
 }
 
 public sealed class LuaToVisualScriptRequest

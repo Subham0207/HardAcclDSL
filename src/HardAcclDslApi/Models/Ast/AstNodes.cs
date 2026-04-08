@@ -7,6 +7,7 @@ public enum AstNodeKind
     AssignmentStatement,
     ReturnStatement,
     IdentifierExpression,
+    GlobalReferenceExpression,
     NumberLiteralExpression,
     StringLiteralExpression,
     BinaryExpression,
@@ -53,6 +54,12 @@ public sealed class ReturnStatementNode : AstNode
 public sealed class IdentifierExpressionNode : AstNode
 {
     public override AstNodeKind Kind => AstNodeKind.IdentifierExpression;
+    public string Name { get; init; } = string.Empty;
+}
+
+public sealed class GlobalReferenceExpressionNode : AstNode
+{
+    public override AstNodeKind Kind => AstNodeKind.GlobalReferenceExpression;
     public string Name { get; init; } = string.Empty;
 }
 

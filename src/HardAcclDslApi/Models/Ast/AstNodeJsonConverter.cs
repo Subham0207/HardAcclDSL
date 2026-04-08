@@ -56,6 +56,10 @@ public sealed class AstNodeJsonConverter : JsonConverter<AstNode>
                 writer.WriteString("name", identifier.Name);
                 break;
 
+            case GlobalReferenceExpressionNode globalRef:
+                writer.WriteString("name", globalRef.Name);
+                break;
+
             case NumberLiteralExpressionNode number:
                 writer.WriteString("rawText", number.RawText);
                 break;

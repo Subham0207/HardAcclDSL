@@ -2,6 +2,7 @@ import type { NodeTypes } from '@xyflow/react'
 import { AddNode } from './AddNode'
 import { AssignmentNode } from './AssignmentNode'
 import { DivideNode } from './DivideNode'
+import { GlobalNode } from './GlobalNode'
 import { IdentifierNode } from './IdentifierNode'
 import { LocalDeclarationNode } from './LocalDeclarationNode'
 import { ModuloNode } from './ModuloNode'
@@ -22,5 +23,6 @@ export const scriptNodeTypes: NodeTypes = {
   divide: DivideNode,
   modulo: ModuloNode,
   identifier: IdentifierNode,
+  global: GlobalNode,
   numberLiteral: NumberLiteralNode,
 }

@@ -77,4 +77,27 @@ public class AstToLuaScribanRendererTests
 
         Assert.Equal("local result = 0\nprint((result + 12) * 11)", lua);
     }
+
+    [Fact]
+    public void RenderProgram_WithGlobalReference_RendersGlobalName()
+    {
+        var ast = new ProgramNode
+        {
+            Statements = new List<AstNode>
+            {
+                new FunctionCallNode
+                {
+                    FunctionName = "print",
+                    Arguments = new List<AstNode>
+                    {
+                        new GlobalReferenceExpressionNode { Name = "multiplier" }
+                    }
+                }
+            }
+        };
+
+        var lua = _sut.RenderProgram(ast);
+
+        Assert.Equal("print(multiplier)", lua);
+    }
 }

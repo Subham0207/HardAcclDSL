@@ -24,6 +24,10 @@ export type IdentifierNodeData = BaseScriptNodeData & {
   variableName: string
 }
 
+export type GlobalNodeData = BaseScriptNodeData & {
+  variableName: string
+}
+
 export type NumberLiteralNodeData = BaseScriptNodeData & {
   value: string
 }
@@ -38,6 +42,7 @@ export type MultiplyFlowNode = Node<OperatorNodeData, 'multiply'>
 export type DivideFlowNode = Node<OperatorNodeData, 'divide'>
 export type ModuloFlowNode = Node<OperatorNodeData, 'modulo'>
 export type IdentifierFlowNode = Node<IdentifierNodeData, 'identifier'>
+export type GlobalFlowNode = Node<GlobalNodeData, 'global'>
 export type NumberLiteralFlowNode = Node<NumberLiteralNodeData, 'numberLiteral'>
 
 export type ScriptFlowNode =
@@ -51,4 +56,5 @@ export type ScriptFlowNode =
   | DivideFlowNode
   | ModuloFlowNode
   | IdentifierFlowNode
+  | GlobalFlowNode
   | NumberLiteralFlowNode

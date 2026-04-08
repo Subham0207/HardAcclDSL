@@ -53,6 +53,10 @@ public sealed class AstToLuaScribanRenderer
             {
                 name = identifier.Name,
             }),
+            GlobalReferenceExpressionNode globalRef => IdentifierTemplate.Render(new
+            {
+                name = globalRef.Name,
+            }),
             NumberLiteralExpressionNode number => NumberTemplate.Render(new
             {
                 raw_text = number.RawText,

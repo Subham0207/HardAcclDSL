@@ -21,6 +21,7 @@ export const starterNodeTemplates: StarterNodeTemplate[] = [
   { type: 'divide', label: 'Divide', role: 'Expression', detail: 'left / right' },
   { type: 'modulo', label: 'Modulo', role: 'Expression', detail: 'left % right' },
   { type: 'identifier', label: 'Identifier', role: 'Expression', detail: 'read variable' },
+  { type: 'global', label: 'Global Node', role: 'Expression', detail: 'read global' },
   { type: 'numberLiteral', label: 'NumberLiteral', role: 'Expression', detail: 'numeric constant' },
 ]
 
@@ -53,6 +54,11 @@ export function createStarterNode(type: StarterNodeType, position: XYPosition, i
     data = {
       ...baseData,
       variableName: 'result',
+    }
+  } else if (type === 'global') {
+    data = {
+      ...baseData,
+      variableName: 'multiplier',
     }
   } else if (type === 'numberLiteral') {
     data = {

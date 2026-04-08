@@ -90,6 +90,13 @@
   outline-offset: 1px;
 }
 
+.legend-globals-json {
+  min-height: 120px;
+  resize: vertical;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 0.76rem;
+}
+
 .legend-ast-preview {
   margin: 12px 0 0;
   max-height: 260px;

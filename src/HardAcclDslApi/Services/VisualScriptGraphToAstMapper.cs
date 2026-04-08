@@ -268,6 +268,14 @@ public sealed class VisualScriptGraphToAstMapper
                     GraphY = node.Position.Y,
                     Name = GetDataString(node.Data, "variableName") ?? "value",
                 },
+                "global" => new GlobalReferenceExpressionNode
+                {
+                    NodeId = node.Id,
+                    GraphNodeType = node.Type,
+                    GraphX = node.Position.X,
+                    GraphY = node.Position.Y,
+                    Name = GetDataString(node.Data, "variableName") ?? "globalValue",
+                },
                 "numberLiteral" => new NumberLiteralExpressionNode
                 {
                     NodeId = node.Id,

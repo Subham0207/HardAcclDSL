@@ -30,6 +30,7 @@ type GraphToAstRequest = {
   user: string
   scriptName: string
   graphSnapshot: GraphSnapshot
+  globals: Record<string, number>
 }
 
 type ListLuaScriptsResponse = {
@@ -51,6 +52,9 @@ function App() {
   const [userName, setUserName] = useState<string>('')
   const [scriptName, setScriptName] = useState<string>('')
   const [savedScripts, setSavedScripts] = useState<string[]>([])
+  const [globalsJson, setGlobalsJson] = useState<string>(`{
+  "multiplier": 2.5
+}`)
 
   const loadGraphFromSavedScript = async (user: string, selectedScriptName: string) => {
     const trimmedUser = user.trim()
@@ -174,11 +178,59 @@ function App() {
                   return
                 }
 
+                let globalsPayload: unknown
+                try {
+                  globalsPayload = JSON.parse(globalsJson)
+                } catch {
+                  const message = 'Runtime globals JSON is invalid.'
+                  setSendStatus(message)
+                  window.alert(message)
+                  return
+                }
+
+                if (globalsPayload === null || Array.isArray(globalsPayload) || typeof globalsPayload !== 'object') {
+                  const message = 'Runtime globals must be a JSON object, for example {"multiplier": 2.5}.'
+                  setSendStatus(message)
+                  window.alert(message)
+                  return
+                }
+
+                if (
+                  Object.prototype.hasOwnProperty.call(globalsPayload, 'nodes') ||
+                  Object.prototype.hasOwnProperty.call(globalsPayload, 'edges')
+                ) {
+                  const message =
+                    'Runtime globals expects a key/value number object only. It looks like you pasted a graph snapshot JSON. Example: {"multiplier": 2.5, "result2": 7}.'
+                  setSendStatus(message)
+                  window.alert(message)
+                  return
+                }
+
+                const globals: Record<string, number> = {}
+                for (const [name, value] of Object.entries(globalsPayload as Record<string, unknown>)) {
+                  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+                    const message = `Global variable name '${name}' is invalid. Use [A-Za-z_][A-Za-z0-9_]*.`
+                    setSendStatus(message)
+                    window.alert(message)
+                    return
+                  }
+
+                  if (typeof value !== 'number' || !Number.isFinite(value)) {
+                    const message = `Global variable '${name}' must be a finite number.`
+                    setSendStatus(message)
+                    window.alert(message)
+                    return
+                  }
+
+                  globals[name] = value
+                }
+
                 const endpoint = apiBaseUrl ? `${apiBaseUrl}/api/lua/graph-to-ast` : '/api/lua/graph-to-ast'
                 const requestPayload: GraphToAstRequest = {
                   user: trimmedUser,
                   scriptName: trimmedScriptName,
                   graphSnapshot: snapshot,
+                  globals,
                 }
 
                 const response = await fetch(endpoint, {
@@ -261,6 +313,22 @@ function App() {
                 placeholder="Enter script name"
               />
             </label>
+            <div className="legend-field">
+              <span>Runtime Globals (number)</span>
+              <button
+                type="button"
+                className="legend-node-btn"
+                onClick={() => graphRef.current?.addNodeAtViewportCenter('global')}
+              >
+                Add Global Node To Graph
+              </button>
+              <textarea
+                className="legend-input legend-globals-json"
+                value={globalsJson}
+                onChange={(event) => setGlobalsJson(event.target.value)}
+                spellCheck={false}
+              />
+            </div>
             {starterNodeTemplates.map((template) => (
               <button
                 key={template.type}

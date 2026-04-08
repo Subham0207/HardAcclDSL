@@ -39,6 +39,7 @@ const handleLayoutByType: Record<ScriptFlowNode['type'], NodeHandleLayout> = {
   divide: { dataIn: ['left', 'right'], dataOut: ['out'], execIn: [], execOut: [] },
   modulo: { dataIn: ['left', 'right'], dataOut: ['out'], execIn: [], execOut: [] },
   identifier: { dataIn: [], dataOut: ['out'], execIn: [], execOut: [] },
+  global: { dataIn: [], dataOut: ['out'], execIn: [], execOut: [] },
   numberLiteral: { dataIn: [], dataOut: ['out'], execIn: [], execOut: [] },
 }
 

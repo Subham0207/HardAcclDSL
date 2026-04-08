@@ -54,8 +54,8 @@ public static class LuaGraphPositionCommentCodec
                 continue;
             }
 
-            var expectedType = GetExpectedGraphNodeType(node);
-            if (expectedType is null)
+            var expectedTypes = GetExpectedGraphNodeTypes(node);
+            if (expectedTypes.Count == 0)
             {
                 continue;
             }
@@ -63,7 +63,7 @@ public static class LuaGraphPositionCommentCodec
             var matchedIndex = -1;
             for (var i = nextCommentIndex; i < comments.Count; i++)
             {
-                if (string.Equals(comments[i].Type, expectedType, StringComparison.Ordinal))
+                if (expectedTypes.Contains(comments[i].Type, StringComparer.Ordinal))
                 {
                     matchedIndex = i;
                     break;
@@ -85,26 +85,27 @@ public static class LuaGraphPositionCommentCodec
         }
     }
 
-    private static string? GetExpectedGraphNodeType(AstNode node)
+    private static IReadOnlyList<string> GetExpectedGraphNodeTypes(AstNode node)
     {
         return node switch
         {
-            LocalDeclarationStatementNode => "localDecl",
-            AssignmentStatementNode => "assignment",
-            ReturnStatementNode => "return",
-            FunctionCallNode call when string.Equals(call.FunctionName, "print", StringComparison.OrdinalIgnoreCase) => "print",
-            IdentifierExpressionNode => "identifier",
-            NumberLiteralExpressionNode => "numberLiteral",
+            LocalDeclarationStatementNode => new[] { "localDecl" },
+            AssignmentStatementNode => new[] { "assignment" },
+            ReturnStatementNode => new[] { "return" },
+            FunctionCallNode call when string.Equals(call.FunctionName, "print", StringComparison.OrdinalIgnoreCase) => new[] { "print" },
+            IdentifierExpressionNode => new[] { "identifier", "global" },
+            GlobalReferenceExpressionNode => new[] { "global" },
+            NumberLiteralExpressionNode => new[] { "numberLiteral" },
             BinaryExpressionNode binary => binary.Operator switch
             {
-                "+" => "add",
-                "-" => "subtract",
-                "*" => "multiply",
-                "/" => "divide",
-                "%" => "modulo",
-                _ => null,
+                "+" => new[] { "add" },
+                "-" => new[] { "subtract" },
+                "*" => new[] { "multiply" },
+                "/" => new[] { "divide" },
+                "%" => new[] { "modulo" },
+                _ => Array.Empty<string>(),
             },
-            _ => null,
+            _ => Array.Empty<string>(),
         };
     }
 

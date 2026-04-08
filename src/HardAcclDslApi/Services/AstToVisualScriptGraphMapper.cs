@@ -180,11 +180,31 @@ public sealed class AstToVisualScriptGraphMapper
         switch (expression)
         {
             case IdentifierExpressionNode identifier:
+                if (string.Equals(identifier.GraphNodeType, "global", StringComparison.Ordinal))
+                {
+                    AddNode(
+                        nodeId,
+                        "global",
+                        PositionForNode(identifier, NextExpressionPosition),
+                        new { label = "Global", role = "Expression", detail = "read global", variableName = identifier.Name },
+                        Handles(dataIn: Array.Empty<string>(), dataOut: new[] { "out" }, execIn: Array.Empty<string>(), execOut: Array.Empty<string>()));
+                    return nodeId;
+                }
+
                 AddNode(
                     nodeId,
                     "identifier",
                     PositionForNode(identifier, NextExpressionPosition),
                     new { label = "Identifier", role = "Expression", detail = "read variable", variableName = identifier.Name },
+                    Handles(dataIn: Array.Empty<string>(), dataOut: new[] { "out" }, execIn: Array.Empty<string>(), execOut: Array.Empty<string>()));
+                return nodeId;
+
+            case GlobalReferenceExpressionNode globalRef:
+                AddNode(
+                    nodeId,
+                    "global",
+                    PositionForNode(globalRef, NextExpressionPosition),
+                    new { label = "Global", role = "Expression", detail = "read global", variableName = globalRef.Name },
                     Handles(dataIn: Array.Empty<string>(), dataOut: new[] { "out" }, execIn: Array.Empty<string>(), execOut: Array.Empty<string>()));
                 return nodeId;
 

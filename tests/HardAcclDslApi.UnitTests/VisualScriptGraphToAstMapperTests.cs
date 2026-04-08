@@ -107,6 +107,51 @@ public class VisualScriptGraphToAstMapperTests
         Assert.Equal("10", right.RawText);
     }
 
+    [Fact]
+    public void Map_GlobalNodeUsedInPrint_MapsToGlobalReferenceExpression()
+    {
+        var snapshot = new VisualScriptGraphSnapshotDto
+        {
+            Nodes = new List<VisualScriptGraphNodeDto>
+            {
+                new()
+                {
+                    Id = "print-1",
+                    Type = "print",
+                    Position = new VisualScriptGraphPositionDto { X = 200, Y = 20 },
+                    Data = JsonSerializer.SerializeToElement(new { }),
+                    Handles = Handles(dataIn: new[] { "value" }, dataOut: Array.Empty<string>(), execIn: new[] { "exec-in" }, execOut: new[] { "exec-out" }),
+                },
+                new()
+                {
+                    Id = "global-1",
+                    Type = "global",
+                    Position = new VisualScriptGraphPositionDto { X = 80, Y = 40 },
+                    Data = JsonSerializer.SerializeToElement(new { variableName = "multiplier" }),
+                    Handles = Handles(dataIn: Array.Empty<string>(), dataOut: new[] { "out" }, execIn: Array.Empty<string>(), execOut: Array.Empty<string>()),
+                },
+            },
+            Edges = new List<VisualScriptGraphEdgeDto>
+            {
+                new()
+                {
+                    Id = "e-global-to-print",
+                    Source = "global-1",
+                    SourceHandle = "out",
+                    Target = "print-1",
+                    TargetHandle = "value",
+                    Flow = "data",
+                }
+            }
+        };
+
+        var result = _sut.Map(snapshot);
+
+        var printStmt = Assert.IsType<FunctionCallNode>(Assert.Single(result.Ast.Statements));
+        var arg = Assert.IsType<GlobalReferenceExpressionNode>(Assert.Single(printStmt.Arguments));
+        Assert.Equal("multiplier", arg.Name);
+    }
+
     private static VisualScriptGraphNodeHandlesDto Handles(
         IReadOnlyList<string> dataIn,
         IReadOnlyList<string> dataOut,

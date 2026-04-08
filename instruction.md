@@ -42,6 +42,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Receives typed VisualScript graph snapshot JSON and returns an acknowledgement (node/edge counts).
 - POST /api/lua/graph-to-ast
 	- Receives request body with required fields: `user`, `scriptName`, `graphSnapshot`.
+	- Accepts optional runtime globals object: `globals` (`{ [name: string]: number }`).
 	- Maps graph snapshot to AST, renders Lua, executes Lua, and saves generated Lua script before returning.
 	- Saved Lua now includes graph position metadata comments per node in this format:
 		- `-- @vs-node <nodeId> <nodeType> <x> <y>`
@@ -52,6 +53,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 		- `error`
 		- `returnValues`
 		- `printedLines` (captured `print(...)` output)
+	- Runtime global names must match Lua identifier format (`[A-Za-z_][A-Za-z0-9_]*`) and values must be finite numbers.
 - POST /api/lua/lua-to-visualscript
 	- Supports two request modes:
 		- `luaCode` mode: receives Lua code and returns parsed AST plus mapped VisualScript graph snapshot.
@@ -93,6 +95,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Assignment
 	- Return
 	- Print
+	- Global Node
 	- Add
 	- Subtract
 	- Multiply
@@ -132,6 +135,9 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - New nodes now use UUID ids (`crypto.randomUUID`) in frontend graph creation.
 - Frontend now captures and sends graph snapshot JSON plus required `user` and `scriptName` to backend mapping route (`/api/lua/graph-to-ast`).
 - Frontend validates `user` and `scriptName` before sending graph snapshots.
+- Frontend now supports runtime globals via multiline JSON input (object map of number values).
+- Frontend now validates runtime globals JSON shape and values before sending execution requests.
+- Frontend includes explicit action to add a `Global Node` to the graph and separate runtime value input for execution.
 - Frontend now asks for username at startup and loads that user's scripts from `GET /api/lua-scripts/{user}`.
 - Frontend now shows saved scripts in a dropdown and, when selected, calls `POST /api/lua/lua-to-visualscript` with `user` + `scriptName` to load and render that script graph.
 - Frontend now includes a dedicated Lua Console panel on the right side of the graph canvas.
@@ -162,7 +168,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Persisted Lua content now carries graph position comments for roundtrip reconstruction.
 - Current mapper coverage:
 	- statement nodes: `localDecl`, `assignment`, `return`, `print`
-	- expression nodes: `identifier`, `numberLiteral`, `add/subtract/multiply/divide/modulo`
+	- expression nodes: `identifier`, `global`, `numberLiteral`, `add/subtract/multiply/divide/modulo`
 	- execution ordering from `exec-out -> exec-in`
 	- diagnostics collection for cycles/unsupported nodes/invalid assignment target
 	- `localDecl` used as expression source maps to identifier by variable name
@@ -171,6 +177,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Added `LuaExecutionService` using Lua.NET (Lua 5.4 bindings) for server-side execution of generated Lua.
 - Graph-to-AST flow is now end-to-end: VisualScript -> AST -> Lua -> Execute -> Response payload.
 - Lua `print(...)` output is captured inside the Lua runtime and returned to clients as `printedLines`.
+- Lua execution now supports injecting number globals before script execution.
 - Added Lua position comment codec for graph roundtrip metadata:
 	- encodes `nodeId` + `nodeType` + `(x, y)` into Lua comments on persisted scripts
 	- decodes comments during Lua->AST mapping and applies positions by expected node type order
@@ -200,7 +207,7 @@ AST JSON contract (latest):
 - Large route request/response payloads are now stored as fixtures in:
 	- `tests/HardAcclDslApi.UnitTests/TestData/graph-to-ast-request.json`
 	- `tests/HardAcclDslApi.UnitTests/TestData/graph-to-ast-response.json`
-- Current count: 27 passing tests.
+- Current count: 32 passing tests.
 - AST mapping tests verify whole-tree structural equality while ignoring NodeId.
 
 ### 5) AST Model (Updated)
@@ -208,6 +215,7 @@ AST JSON contract (latest):
 - ProgramNode stores `Statements` as `List<AstNode>`.
 - Statement and expression families are not split into separate base classes.
 - `FunctionCallNode` is used directly for call statements.
+- `GlobalReferenceExpressionNode` exists for explicit global-variable references in the AST model.
 - `FunctionDeclarationNode` exists in the AST model as a planned node type (grammar/mapping for function declarations is not implemented yet).
 - Visual editor currently models function invocation as explicit `Print` node semantics rather than generic function-call semantics.
 
