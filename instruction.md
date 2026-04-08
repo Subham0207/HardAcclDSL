@@ -43,6 +43,9 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - POST /api/lua/graph-to-ast
 	- Receives request body with required fields: `user`, `scriptName`, `graphSnapshot`.
 	- Maps graph snapshot to AST, renders Lua, executes Lua, and saves generated Lua script before returning.
+	- Saved Lua now includes graph position metadata comments per node in this format:
+		- `-- @vs-node <nodeId> <nodeType> <x> <y>`
+	- API response `luaCode` remains clean executable Lua (position comments are for persisted roundtrip state).
 	- Also returns generated Lua code and Lua execution result.
 	- Execution result now includes:
 		- `success`
@@ -55,6 +58,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 		- storage lookup mode: receives `user` + `scriptName`, loads Lua from storage, then returns parsed AST plus mapped VisualScript graph snapshot.
 	- If `user` and `scriptName` are provided, both are required together.
 	- Returns `404` when script is not found for the provided user.
+	- When Lua includes `-- @vs-node ...` comments, mapper restores node ids/types/positions into AST metadata and reuses them in graph snapshot output.
+	- If no position comments are present, visual graph mapping falls back to default layout behavior.
 - GET /api/lua/lua-to-visualscript/default
 	- Uses hardcoded bootstrap Lua (`local result = 10`) and returns mapped AST + graph snapshot for first-load UI hydration.
 - Added new Lua script storage controller: `LuaScriptStorageController` under `api/lua-scripts`.
@@ -154,6 +159,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Existing rows keep their original `s3Link`; only object content is overwritten on save.
 	- Stores only `s3Link` in DynamoDB (no Lua content duplication).
 	- `s3Link` is internal-only and is not exposed by read/list/save API response contracts.
+	- Persisted Lua content now carries graph position comments for roundtrip reconstruction.
 - Current mapper coverage:
 	- statement nodes: `localDecl`, `assignment`, `return`, `print`
 	- expression nodes: `identifier`, `numberLiteral`, `add/subtract/multiply/divide/modulo`
@@ -165,6 +171,10 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Added `LuaExecutionService` using Lua.NET (Lua 5.4 bindings) for server-side execution of generated Lua.
 - Graph-to-AST flow is now end-to-end: VisualScript -> AST -> Lua -> Execute -> Response payload.
 - Lua `print(...)` output is captured inside the Lua runtime and returned to clients as `printedLines`.
+- Added Lua position comment codec for graph roundtrip metadata:
+	- encodes `nodeId` + `nodeType` + `(x, y)` into Lua comments on persisted scripts
+	- decodes comments during Lua->AST mapping and applies positions by expected node type order
+	- avoids comment drift for non-graph AST nodes (for example local declaration inline literals)
 - Fixed false-positive expression cycle detection for shared expression DAG nodes:
 	- mapper now treats `visiting` as recursion stack (add/remove per traversal path)
 	- repeated references to the same source node no longer incorrectly emit `expression_cycle`
