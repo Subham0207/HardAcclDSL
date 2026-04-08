@@ -58,10 +58,13 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 		- stores Lua code in S3 as `uuid.lua`
 		- stores DynamoDB metadata row with keys `user` (PK), `scriptname` (SK), and `s3Link`
 		- rejects duplicate `(user, scriptName)` with conflict response
+		- response returns only `user` and `scriptName` (`s3Link` is internal)
 	- `GET /api/lua-scripts/{user}/{scriptName}`
 		- reads metadata from DynamoDB and Lua content from S3
+		- response returns `user`, `scriptName`, and `luaCode` (`s3Link` is internal)
 	- `GET /api/lua-scripts/{user}`
 		- lists script metadata rows for user
+		- response script metadata omits `s3Link`
 	- `DELETE /api/lua-scripts/{user}/{scriptName}`
 		- deletes both S3 object and DynamoDB metadata row
 
@@ -140,6 +143,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 	- Uses AWS SDK S3 + DynamoDB clients.
 	- Uses conditional writes in DynamoDB to enforce unique `(user, scriptname)`.
 	- Stores only `s3Link` in DynamoDB (no Lua content duplication).
+	- `s3Link` is internal-only and is not exposed by read/list/save API response contracts.
 - Current mapper coverage:
 	- statement nodes: `localDecl`, `assignment`, `return`, `print`
 	- expression nodes: `identifier`, `numberLiteral`, `add/subtract/multiply/divide/modulo`
@@ -204,8 +208,8 @@ AST JSON contract (latest):
 	- Creates API Gateway HTTP API with Lambda proxy integration and routes (`ANY /`, `ANY /{proxy+}`).
 	- Configures API stage and invoke permission.
 	- Exposes output key `HardAcclDSLApiUrl`.
-	- Creates S3 bucket `hardaccldsl-scripts` for Lua script files.
-	- Creates DynamoDB table `HardAcclDSLScriptStore` with key schema:
+	- Creates S3 bucket `hardaccldsl` for Lua script files.
+	- Creates DynamoDB table `HardAcclDSL` with key schema:
 		- PK: `user`
 		- SK: `scriptname`
 	- Adds Lambda IAM permissions for DynamoDB (`GetItem/PutItem/DeleteItem/Query`) and S3 (`GetObject/PutObject/DeleteObject/ListBucket`).
