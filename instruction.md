@@ -123,6 +123,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - New nodes now use UUID ids (`crypto.randomUUID`) in frontend graph creation.
 - Frontend now captures and sends graph snapshot JSON plus required `user` and `scriptName` to backend mapping route (`/api/lua/graph-to-ast`).
 - Frontend validates `user` and `scriptName` before sending graph snapshots.
+- Frontend now asks for username at startup and loads that user's scripts from `GET /api/lua-scripts/{user}`.
+- Frontend now shows saved scripts in a dropdown and allows selecting one to populate `scriptName`.
 - Frontend now includes a dedicated Lua Console panel on the right side of the graph canvas.
 - Lua Console displays:
 	- generated Lua code

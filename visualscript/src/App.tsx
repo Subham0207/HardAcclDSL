@@ -26,6 +26,13 @@ type GraphToAstRequest = {
   graphSnapshot: GraphSnapshot
 }
 
+type ListLuaScriptsResponse = {
+  user: string
+  scripts: Array<{
+    scriptName: string
+  }>
+}
+
 function App() {
   const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? ''
   const graphRef = useRef<GraphCanvasHandle | null>(null)
@@ -37,10 +44,40 @@ function App() {
   const [luaCode, setLuaCode] = useState<string>('')
   const [userName, setUserName] = useState<string>('')
   const [scriptName, setScriptName] = useState<string>('')
+  const [savedScripts, setSavedScripts] = useState<string[]>([])
 
   useEffect(() => {
-    const loadDefaultGraph = async () => {
+    const loadSavedScripts = async (user: string) => {
+      const endpoint = apiBaseUrl
+        ? `${apiBaseUrl}/api/lua-scripts/${encodeURIComponent(user)}`
+        : `/api/lua-scripts/${encodeURIComponent(user)}`
+
+      const response = await fetch(endpoint)
+      const responseText = await response.text()
+      if (!response.ok) {
+        throw new Error(`Script list failed (${response.status}): ${responseText}`)
+      }
+
+      const payload = JSON.parse(responseText) as ListLuaScriptsResponse
+      const scripts = (payload.scripts ?? [])
+        .map((item) => item.scriptName)
+        .filter((item) => Boolean(item))
+      setSavedScripts(scripts)
+    }
+
+    const initialize = async () => {
       try {
+        const startupUser = window.prompt('Enter username to load your saved scripts:')?.trim() ?? ''
+        if (!startupUser) {
+          const message = 'Username is required to load saved scripts.'
+          setSendStatus(message)
+          window.alert(message)
+          return
+        }
+
+        setUserName(startupUser)
+        await loadSavedScripts(startupUser)
+
         const endpoint = apiBaseUrl
           ? `${apiBaseUrl}/api/lua/lua-to-visualscript/default`
           : '/api/lua/lua-to-visualscript/default'
@@ -58,11 +95,11 @@ function App() {
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
-        setSendStatus(`Bootstrap failed: ${message}`)
+        setSendStatus(`Startup failed: ${message}`)
       }
     }
 
-    loadDefaultGraph()
+    initialize()
   }, [apiBaseUrl])
 
   return (
@@ -126,6 +163,9 @@ function App() {
                 setLuaCode(payload.luaCode ?? '')
                 setPrintedLines(payload.execution?.printedLines ?? [])
                 setExecutionError(payload.execution?.error ?? '')
+                if (!savedScripts.includes(trimmedScriptName)) {
+                  setSavedScripts((previous) => [...previous, trimmedScriptName].sort((a, b) => a.localeCompare(b)))
+                }
                 setSendStatus('Sent to backend')
               } catch (error) {
                 const message = error instanceof Error ? error.message : 'Unknown error'
@@ -140,14 +180,23 @@ function App() {
           </button>
           <div className="legend-buttons">
             <label className="legend-field">
-              <span>Username</span>
-              <input
+              <span>Current User</span>
+              <input className="legend-input" type="text" value={userName} readOnly />
+            </label>
+            <label className="legend-field">
+              <span>Saved Scripts</span>
+              <select
                 className="legend-input"
-                type="text"
-                value={userName}
-                onChange={(event) => setUserName(event.target.value)}
-                placeholder="Enter username"
-              />
+                value={scriptName}
+                onChange={(event) => setScriptName(event.target.value)}
+              >
+                <option value="">Select saved script</option>
+                {savedScripts.map((savedScript) => (
+                  <option key={savedScript} value={savedScript}>
+                    {savedScript}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="legend-field">
               <span>Script Name</span>
