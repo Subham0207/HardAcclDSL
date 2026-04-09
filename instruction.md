@@ -90,7 +90,9 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Installed React Flow library (`@xyflow/react`) in `visualscript/`.
 - Replaced Vite starter page with a basic graph canvas prototype.
 - Refactored UI into reusable modules:
-	- thin `App.tsx` shell
+	- `App.tsx` now owns frontend routing (`BrowserRouter` + `Routes`)
+	- `routes/visualscript.tsx` contains visual scripting page/business logic
+	- `routes/EcomMarketplaceRoute.tsx` contains `/examples/ecommarketplace` placeholder route
 	- `GraphCanvas` for graph state/behavior
 	- per-node components under `features/nodes/`
 	- centralized node registry (`nodeTypes`)
