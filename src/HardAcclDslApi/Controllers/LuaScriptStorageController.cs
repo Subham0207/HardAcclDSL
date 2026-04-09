@@ -8,10 +8,12 @@ namespace HardAcclDslApi.Controllers;
 public sealed class LuaScriptStorageController : ControllerBase
 {
     private readonly ILuaScriptStorageService _storage;
+    private readonly LuaExecutionService _luaExecutionService;
 
-    public LuaScriptStorageController(ILuaScriptStorageService storage)
+    public LuaScriptStorageController(ILuaScriptStorageService storage, LuaExecutionService luaExecutionService)
     {
         _storage = storage;
+        _luaExecutionService = luaExecutionService;
     }
 
     [HttpPost("save")]
@@ -99,6 +101,27 @@ public sealed class LuaScriptStorageController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPost("execute")]
+    public async Task<ActionResult<LuaExecutionResult>> Execute([FromBody] ExecuteLuaScriptRequest request, CancellationToken cancellationToken)
+    {
+        if (request is null || string.IsNullOrWhiteSpace(request.User) || string.IsNullOrWhiteSpace(request.ScriptName))
+        {
+            return BadRequest("user and scriptName are required.");
+        }
+
+        var script = await _storage.GetScriptAsync(request.User, request.ScriptName, cancellationToken);
+        if (script is null)
+        {
+            return NotFound(new
+            {
+                error = $"Script '{request.ScriptName}' not found for user '{request.User}'."
+            });
+        }
+
+        var execution = _luaExecutionService.Execute(script.LuaCode, request.Globals);
+        return Ok(execution);
+    }
 }
 
 public sealed class SaveLuaScriptApiRequest
@@ -112,6 +135,13 @@ public sealed class SaveLuaScriptResponse
 {
     public string User { get; init; } = string.Empty;
     public string ScriptName { get; init; } = string.Empty;
+}
+
+public sealed class ExecuteLuaScriptRequest
+{
+    public string User { get; init; } = string.Empty;
+    public string ScriptName { get; init; } = string.Empty;
+    public Dictionary<string, double> Globals { get; init; } = new(StringComparer.Ordinal);
 }
 
 public sealed class GetLuaScriptResponse
