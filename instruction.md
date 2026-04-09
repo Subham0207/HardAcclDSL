@@ -80,6 +80,11 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 		- response script metadata omits `s3Link`
 	- `DELETE /api/lua-scripts/{user}/{scriptName}`
 		- deletes both S3 object and DynamoDB metadata row
+	- `POST /api/lua-scripts/execute`
+		- request body: `user`, `scriptName`, optional `globals` (`{ [name: string]: number }`)
+		- loads stored Lua script for `(user, scriptName)` from storage and executes it directly
+		- uses same execution payload contract as graph-to-ast (`success`, `error`, `returnValues`, `printedLines`)
+		- does not include Lua code in response
 
 ### 3.1) Visual Script UI (React Flow Prototype)
 - Installed React Flow library (`@xyflow/react`) in `visualscript/`.
@@ -178,6 +183,7 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Graph-to-AST flow is now end-to-end: VisualScript -> AST -> Lua -> Execute -> Response payload.
 - Lua `print(...)` output is captured inside the Lua runtime and returned to clients as `printedLines`.
 - Lua execution now supports injecting number globals before script execution.
+- Added direct stored-script execution flow via `/api/lua-scripts/execute` using runtime number globals.
 - Added Lua position comment codec for graph roundtrip metadata:
 	- encodes `nodeId` + `nodeType` + `(x, y)` into Lua comments on persisted scripts
 	- decodes comments during Lua->AST mapping and applies positions by expected node type order
@@ -207,7 +213,7 @@ AST JSON contract (latest):
 - Large route request/response payloads are now stored as fixtures in:
 	- `tests/HardAcclDslApi.UnitTests/TestData/graph-to-ast-request.json`
 	- `tests/HardAcclDslApi.UnitTests/TestData/graph-to-ast-response.json`
-- Current count: 32 passing tests.
+- Current count: 35 passing tests.
 - AST mapping tests verify whole-tree structural equality while ignoring NodeId.
 
 ### 5) AST Model (Updated)
