@@ -45,6 +45,7 @@ jobs:
         run: |
           yarn tsc -b
           yarn vite build --base="/$REPO_NAME/"
+          cp dist/index.html dist/404.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
