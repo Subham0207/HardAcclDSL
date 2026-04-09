@@ -1,0 +1,125 @@
+{
+  "defaultUser": "Admin",
+  "products": [
+    {
+      "id": "poster-print",
+      "name": "Poster Print",
+      "visual": "🖼️",
+      "description": "Premium matte poster printing with custom dimensions.",
+      "scriptName": "test",
+      "attributes": [
+        { "id": "quantity", "name": "quantity", "value": 1 },
+        { "id": "height", "name": "height", "value": 24 },
+        { "id": "width", "name": "width", "value": 18 }
+      ]
+    },
+    {
+      "id": "custom-tabletop",
+      "name": "Custom Tabletop",
+      "visual": "🪵",
+      "description": "Build a tabletop with made-to-order dimensions.",
+      "scriptName": "test",
+      "attributes": [
+        { "id": "quantity", "name": "quantity", "value": 1 },
+        { "id": "height", "name": "height", "value": 30 },
+        { "id": "width", "name": "width", "value": 60 }
+      ]
+    },
+    {
+      "id": "custom-Lantern",
+      "name": "Custom Lantern",
+      "visual": "🏮",
+      "description": "Build a lantern with made-to-order dimensions.",
+      "scriptName": "test",
+      "attributes": [
+        { "id": "quantity", "name": "quantity", "value": 1 },
+        { "id": "height", "name": "height", "value": 30 },
+        { "id": "width", "name": "width", "value": 60 }
+      ]
+    },
+    {
+      "id": "wand",
+      "name": "Wand",
+      "visual": "🪄",
+      "description": "Build a wand with made-to-order dimensions.",
+      "scriptName": "test",
+      "attributes": [
+        { "id": "quantity", "name": "quantity", "value": 1 },
+        { "id": "height", "name": "height", "value": 30 },
+        { "id": "width", "name": "width", "value": 60 }
+      ]
+    },
+    {
+      "id": "armor",
+      "name": "Armor",
+      "visual": "🛡️",
+      "description": "Build an armor with made-to-order dimensions.",
+      "scriptName": "test",
+      "attributes": [
+        { "id": "quantity", "name": "quantity", "value": 1 },
+        { "id": "height", "name": "height", "value": 30 },
+        { "id": "width", "name": "width", "value": 60 }
+      ]
+    },
+    {
+      "id": "runed-longsword",
+      "name": "Runed Longsword",
+      "visual": "⚔️",
+      "description": "Forged steel longsword engraved with arcane runes.",
+      "scriptName": "test",
+      "attributes": [
+        { "id": "quantity", "name": "quantity", "value": 1 },
+        { "id": "height", "name": "height", "value": 42 },
+        { "id": "width", "name": "width", "value": 3 }
+      ]
+    },
+    {
+      "id": "dwarven-warhammer",
+      "name": "Dwarven Warhammer",
+      "visual": "🔨",
+      "description": "Heavy two-handed hammer from the deep mountain forges.",
+      "scriptName": "test",
+      "attributes": [
+        { "id": "quantity", "name": "quantity", "value": 1 },
+        { "id": "height", "name": "height", "value": 18 },
+        { "id": "width", "name": "width", "value": 4 }
+      ]
+    },
+    {
+      "id": "enchanted-cloak",
+      "name": "Enchanted Cloak",
+      "visual": "🧥",
+      "description": "A stitched cloak with protective wards and stealth weave.",
+      "scriptName": "test",
+      "attributes": [
+        { "id": "quantity", "name": "quantity", "value": 1 },
+        { "id": "height", "name": "height", "value": 55 },
+        { "id": "width", "name": "width", "value": 2 }
+      ]
+    },
+    {
+      "id": "alchemist-kit",
+      "name": "Alchemist Kit",
+      "visual": "⚗️",
+      "description": "Portable lab satchel for potion brewing and reagent mixing.",
+      "scriptName": "test",
+      "attributes": [
+        { "id": "quantity", "name": "quantity", "value": 1 },
+        { "id": "height", "name": "height", "value": 12 },
+        { "id": "width", "name": "width", "value": 85 }
+      ]
+    },
+    {
+      "id": "dragonhide-boots",
+      "name": "Dragonhide Boots",
+      "visual": "🥾",
+      "description": "Travel boots crafted from dragonhide for rugged quests.",
+      "scriptName": "test",
+      "attributes": [
+        { "id": "quantity", "name": "quantity", "value": 1 },
+        { "id": "height", "name": "height", "value": 42 },
+        { "id": "width", "name": "width", "value": 6 }
+      ]
+    }
+  ]
+}

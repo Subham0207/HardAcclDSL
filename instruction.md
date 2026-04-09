@@ -92,7 +92,8 @@ IR is no longer the immediate focus. It can be revisited later if optimization o
 - Refactored UI into reusable modules:
 	- `App.tsx` now owns frontend routing (`BrowserRouter` + `Routes`)
 	- `routes/visualscript.tsx` contains visual scripting page/business logic
-	- `routes/EcomMarketplaceRoute.tsx` contains `/examples/ecommarketplace` placeholder route
+	- `routes/EcomMarketplaceRoute.tsx` contains `/examples/ecommarketplace` ecommerce example route
+	- `routes/ecommarketplaceSeed.json` stores ecommerce seed data (default user, product details, per-product script lists)
 	- `GraphCanvas` for graph state/behavior
 	- per-node components under `features/nodes/`
 	- centralized node registry (`nodeTypes`)

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ProductCard } from './ecommarketplace/ProductCard'
+import marketplaceSeed from './ecommarketplaceSeed.json'
 import './EcomMarketplaceRoute.css'
 
 type ProductAttribute = {
@@ -36,32 +37,12 @@ type ExecuteResponse = {
   returnValues: string[]
 }
 
-const initialProducts: ProductConfig[] = [
-  {
-    id: 'poster-print',
-    name: 'Poster Print',
-    visual: '🖼️',
-    description: 'Premium matte poster printing with custom dimensions.',
-    scriptName: '',
-    attributes: [
-      { id: 'quantity', name: 'quantity', value: 1 },
-      { id: 'height', name: 'height', value: 24 },
-      { id: 'width', name: 'width', value: 18 },
-    ],
-  },
-  {
-    id: 'custom-tabletop',
-    name: 'Custom Tabletop',
-    visual: '🪵',
-    description: 'Build a tabletop with made-to-order dimensions.',
-    scriptName: '',
-    attributes: [
-      { id: 'quantity', name: 'quantity', value: 1 },
-      { id: 'height', name: 'height', value: 30 },
-      { id: 'width', name: 'width', value: 60 },
-    ],
-  },
-]
+type MarketplaceSeed = {
+  defaultUser: string
+  products: ProductConfig[]
+}
+
+const seed = marketplaceSeed as MarketplaceSeed
 
 function toIdSeed() {
   return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
@@ -71,10 +52,10 @@ function toIdSeed() {
 
 export function EcomMarketplaceRoute() {
   const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? ''
-  const [products, setProducts] = useState<ProductConfig[]>(initialProducts)
-  const [activeProductId, setActiveProductId] = useState<string>(initialProducts[0].id)
+  const [products, setProducts] = useState<ProductConfig[]>(seed.products)
+  const [activeProductId, setActiveProductId] = useState<string>(seed.products[0].id)
   const [mode, setMode] = useState<'live' | 'edit'>('live')
-  const [userName, setUserName] = useState<string>('')
+  const [userName, setUserName] = useState<string>(seed.defaultUser)
   const [availableScripts, setAvailableScripts] = useState<string[]>([])
   const [status, setStatus] = useState<string>('')
   const [calculatedPrice, setCalculatedPrice] = useState<number>(0)
@@ -84,6 +65,7 @@ export function EcomMarketplaceRoute() {
   const [newAttributeValue, setNewAttributeValue] = useState('0')
 
   const activeProduct = products.find((product) => product.id === activeProductId) ?? products[0]
+  const scriptOptions = useMemo(() => Array.from(new Set(availableScripts)), [availableScripts])
 
   const totalPrice = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.price, 0),
@@ -285,7 +267,7 @@ export function EcomMarketplaceRoute() {
                   onChange={(event) => setActiveProductPatch({ scriptName: event.target.value })}
                 >
                   <option value="">Select script</option>
-                  {availableScripts.map((script) => (
+                  {scriptOptions.map((script) => (
                     <option key={script} value={script}>
                       {script}
                     </option>
