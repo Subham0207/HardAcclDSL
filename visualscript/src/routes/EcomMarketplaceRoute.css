@@ -1,0 +1,257 @@
+.eco-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 5% 0%, #fff2e0 0%, transparent 42%),
+    radial-gradient(circle at 95% 15%, #e8f6ff 0%, transparent 38%),
+    #f7f6f2;
+  color: #2a2e33;
+}
+
+.eco-header {
+  padding: 20px;
+  border-bottom: 1px solid #e4dfd6;
+  background: #fffdf8dd;
+  backdrop-filter: blur(6px);
+}
+
+.eco-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #223444;
+}
+
+.eco-header p {
+  margin: 6px 0 0;
+  color: #5a6673;
+}
+
+.eco-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 14px;
+  padding: 14px;
+}
+
+.eco-products {
+  border: 1px solid #e0dbd0;
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+}
+
+.eco-products-grid {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.eco-product-card {
+  border: 1px solid #d9e4ef;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  gap: 8px;
+}
+
+.eco-product-card:hover {
+  border-color: #9fbfe0;
+  box-shadow: 0 8px 18px rgba(26, 57, 92, 0.12);
+}
+
+.eco-product-visual {
+  height: 88px;
+  border-radius: 10px;
+  background: #f1f7ff;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+}
+
+.eco-product-content h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #21384f;
+}
+
+.eco-product-content p {
+  margin: 6px 0 0;
+  font-size: 0.84rem;
+  color: #5b6d81;
+}
+
+.eco-product-cta {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1f5ea0;
+}
+
+.eco-panel {
+  border: 1px solid #e0dbd0;
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.eco-mode-switch {
+  display: inline-flex;
+  border: 1px solid #cfdceb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.eco-mode-switch button {
+  border: 0;
+  background: #f8fbff;
+  color: #244566;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.eco-mode-switch button[data-active='true'] {
+  background: #1f5ea0;
+  color: #fff;
+}
+
+.eco-field {
+  display: grid;
+  gap: 4px;
+}
+
+.eco-field label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #34567a;
+}
+
+.eco-input,
+.eco-select {
+  width: 100%;
+  border: 1px solid #c7d7eb;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.84rem;
+  color: #234a74;
+  padding: 7px 9px;
+}
+
+.eco-attrs {
+  display: grid;
+  gap: 8px;
+}
+
+.eco-attr-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 6px;
+}
+
+.eco-pill {
+  border: 1px solid #d2e1f1;
+  border-radius: 999px;
+  background: #f5faff;
+  color: #24527f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 9px;
+}
+
+.eco-primary,
+.eco-secondary,
+.eco-danger {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.eco-primary {
+  background: #1f5ea0;
+  color: #fff;
+}
+
+.eco-secondary {
+  background: #eef5ff;
+  border-color: #c8daef;
+  color: #20486f;
+}
+
+.eco-danger {
+  background: #fff0ed;
+  border-color: #f3bcb2;
+  color: #8f2f1e;
+}
+
+.eco-price {
+  border: 1px dashed #9cbad8;
+  border-radius: 10px;
+  background: #f3f9ff;
+  padding: 10px;
+}
+
+.eco-price strong {
+  font-size: 1.2rem;
+  color: #133d64;
+}
+
+.eco-cart {
+  border: 1px solid #e0dbd0;
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.eco-cart-list {
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.eco-cart-item {
+  border: 1px solid #d8e2ee;
+  border-radius: 8px;
+  background: #f9fbff;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.eco-total {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1b3f63;
+}
+
+.eco-muted {
+  color: #6c7784;
+  font-size: 0.78rem;
+}
+
+.eco-top-link {
+  margin-top: 4px;
+  display: inline-block;
+  color: #1f5ea0;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 980px) {
+  .eco-layout {
+    grid-template-columns: 1fr;
+  }
+}
